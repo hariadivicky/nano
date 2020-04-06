@@ -4,14 +4,10 @@
 
 package nano
 
-import "net/http"
-
-// RouterGroup defines collection of route that has same prefix
-type RouterGroup struct {
-	prefix string
-	engine *Engine
-	parent *RouterGroup
-}
+import (
+	"net/http"
+	"strings"
+)
 
 // Engine defines nano web engine.
 type Engine struct {
@@ -19,6 +15,14 @@ type Engine struct {
 	router *router
 	debug  bool
 	groups []*RouterGroup
+}
+
+// RouterGroup defines collection of route that has same prefix
+type RouterGroup struct {
+	prefix      string
+	engine      *Engine
+	middlewares []HandlerFunc
+	parent      *RouterGroup
 }
 
 // H defines json wrapper.
@@ -40,6 +44,11 @@ func New() *Engine {
 	return engine
 }
 
+// Use functions to apply middleware function(s).
+func (rg *RouterGroup) Use(middlewares ...HandlerFunc) {
+	rg.middlewares = append(rg.middlewares, middlewares...)
+}
+
 // Group functions to create new router group.
 func (rg *RouterGroup) Group(prefix string) *RouterGroup {
 	group := &RouterGroup{
@@ -54,8 +63,8 @@ func (rg *RouterGroup) Group(prefix string) *RouterGroup {
 }
 
 // GET functions to register route with GET request method.
-func (rg *RouterGroup) GET(urlPattern string, handler HandlerFunc) {
-	rg.addRoute(http.MethodGet, urlPattern, handler)
+func (rg *RouterGroup) GET(urlPattern string, handler ...HandlerFunc) {
+	rg.addRoute(http.MethodGet, urlPattern, handler...)
 }
 
 // POST functions to register route with POST request method.
@@ -74,16 +83,26 @@ func (rg *RouterGroup) DELETE(urlPattern string, handler HandlerFunc) {
 }
 
 // addRoute functions to register new route with current group prefix.
-func (rg *RouterGroup) addRoute(requestMethod, urlPattern string, handler HandlerFunc) {
+func (rg *RouterGroup) addRoute(requestMethod, urlPattern string, handler ...HandlerFunc) {
 	// append router group prefix.
 	prefixedURLPattern := rg.prefix + urlPattern
 
-	rg.engine.router.addRoute(requestMethod, prefixedURLPattern, handler)
+	rg.engine.router.addRoute(requestMethod, prefixedURLPattern, handler...)
 }
 
 // ServeHTTP implements multiplexer.
 func (ng *Engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	middlewares := make([]HandlerFunc, 0)
+
+	// scanning for router group middleware.
+	for _, group := range ng.groups {
+		if strings.HasPrefix(r.URL.Path, group.prefix) {
+			middlewares = append(middlewares, group.middlewares...)
+		}
+	}
+
 	ctx := newContext(w, r)
+	ctx.handlers = middlewares
 	ng.router.handle(ctx)
 }
 

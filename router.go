@@ -9,14 +9,14 @@ import (
 // router defines main router structure.
 type router struct {
 	nodes    map[string]*node
-	handlers map[string]HandlerFunc
+	handlers map[string][]HandlerFunc
 }
 
 // newRouter is router constructor.
 func newRouter() *router {
 	return &router{
 		nodes:    make(map[string]*node),
-		handlers: make(map[string]HandlerFunc),
+		handlers: make(map[string][]HandlerFunc),
 	}
 }
 
@@ -42,7 +42,7 @@ func createURLParts(urlPattern string) []string {
 }
 
 // addRoute functions to register route to router.
-func (r *router) addRoute(requestMethod, urlPattern string, handler HandlerFunc) {
+func (r *router) addRoute(requestMethod, urlPattern string, handler ...HandlerFunc) {
 	urlParts := createURLParts(urlPattern)
 
 	rootNode, exists := r.nodes[requestMethod]
@@ -104,9 +104,14 @@ func (r *router) handle(c *Context) {
 	if node != nil {
 		key := fmt.Sprintf("%s-%s", c.Method, node.urlPattern)
 		c.Params = params
-		// forward request.
-		r.handlers[key](c)
+
+		// append current handler to handler stack.
+		// extract route handler(s).
+		c.handlers = append(c.handlers, r.handlers[key]...)
 	} else {
 		c.String(http.StatusNotFound, "404 not found %s", c.Path)
 	}
+
+	// call handlers stack.
+	c.Next()
 }

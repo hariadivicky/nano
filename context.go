@@ -8,11 +8,13 @@ import (
 
 // Context defines nano request - response context.
 type Context struct {
-	Request *http.Request
-	Writer  http.ResponseWriter
-	Method  string
-	Path    string
-	Params  map[string]string
+	Request  *http.Request
+	Writer   http.ResponseWriter
+	Method   string
+	Path     string
+	Params   map[string]string
+	handlers []HandlerFunc
+	cursor   int // used for handlers stack.
 }
 
 // newContext is Context constructor.
@@ -22,6 +24,17 @@ func newContext(w http.ResponseWriter, r *http.Request) *Context {
 		Writer:  w,
 		Method:  r.Method,
 		Path:    r.URL.Path,
+		cursor:  -1,
+	}
+}
+
+// Next functions to move cursor to the next handler stack.
+func (c *Context) Next() {
+	// moving cursor.
+	c.cursor++
+
+	if c.cursor < len(c.handlers) {
+		c.handlers[c.cursor](c)
 	}
 }
 
