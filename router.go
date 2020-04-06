@@ -8,15 +8,15 @@ import (
 
 // router defines main router structure.
 type router struct {
-	nodes   map[string]*node
-	handler map[string]HandlerFunc
+	nodes    map[string]*node
+	handlers map[string]HandlerFunc
 }
 
 // newRouter is router constructor.
 func newRouter() *router {
 	return &router{
-		nodes:   make(map[string]*node),
-		handler: make(map[string]HandlerFunc),
+		nodes:    make(map[string]*node),
+		handlers: make(map[string]HandlerFunc),
 	}
 }
 
@@ -58,7 +58,7 @@ func (r *router) addRoute(requestMethod, urlPattern string, handler HandlerFunc)
 
 	// insert children to tree.
 	rootNode.insertChildren(urlPattern, urlParts, 0)
-	r.handler[key] = handler
+	r.handlers[key] = handler
 }
 
 // findRoute functions to matching current request with route node.
@@ -105,7 +105,7 @@ func (r *router) handle(c *Context) {
 		key := fmt.Sprintf("%s-%s", c.Method, node.urlPattern)
 		c.Params = params
 		// forward request.
-		r.handler[key](c)
+		r.handlers[key](c)
 	} else {
 		c.String(http.StatusNotFound, "404 not found %s", c.Path)
 	}
