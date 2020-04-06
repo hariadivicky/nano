@@ -1,19 +1,25 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/hariadivicky/nano"
 )
 
 func main() {
-	router := nano.New()
+	app := nano.New()
 
 	// simple endpoint to print hello world.
-	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, "hello world!\n")
+	app.GET("/", func(c *nano.Context) {
+		c.String(http.StatusOK, "hello world\n")
 	})
 
-	http.ListenAndServe(":8080", router)
+	// return product id.
+	app.GET("/products/:id", func(c *nano.Context) {
+		c.JSON(http.StatusOK, nano.H{
+			"product_id": c.Param("id"),
+		})
+	})
+
+	app.Run(":8080")
 }

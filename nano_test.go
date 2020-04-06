@@ -1,7 +1,6 @@
 package nano_test
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/hariadivicky/nano"
@@ -9,12 +8,12 @@ import (
 
 // Basic usages to create hello world.
 func Example() {
-	router := nano.New()
+	app := nano.New()
 
 	// simple endpoint to print hello world.
-	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, "hello world!\n")
+	app.GET("/", func(c *nano.Context) {
+		c.String(http.StatusOK, "hello world")
 	})
 
-	http.ListenAndServe(":8080", router)
+	app.Run(":8080")
 }
