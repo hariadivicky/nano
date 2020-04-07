@@ -2,7 +2,7 @@
 
 # Nano HTTP Multiplexer
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/ce3f320e33d14e10b72def861820d23e)](https://www.codacy.com/manual/hariadivicky/nano?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=hariadivicky/nano&amp;utm_campaign=Badge_Grade)
+[![Go Report Card](https://goreportcard.com/badge/github.com/hariadivicky/nano)](https://goreportcard.com/report/github.com/hariadivicky/nano) ![GitHub issues](https://img.shields.io/github/issues/hariadivicky/nano) ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/hariadivicky/nano) ![GitHub](https://img.shields.io/github/license/hariadivicky/nano)
 
 Nano is a simple & elegant HTTP multiplexer written in Go (Golang). It features REST API with Go net/http performance. If you need a minimalist, productivity and already familiar with net/http package, Nano is great choice.
 
