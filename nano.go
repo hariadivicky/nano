@@ -5,6 +5,7 @@
 package nano
 
 import (
+	"log"
 	"net/http"
 	"strings"
 )
@@ -80,6 +81,17 @@ func (rg *RouterGroup) PUT(urlPattern string, handler HandlerFunc) {
 // DELETE functions to register route with DELETE request method.
 func (rg *RouterGroup) DELETE(urlPattern string, handler HandlerFunc) {
 	rg.addRoute(http.MethodDelete, urlPattern, handler)
+}
+
+// Default functions to register default handler when no matching routes.
+// Only one Default handler allowed to register.
+func (rg *RouterGroup) Default(handler HandlerFunc) {
+	// reject overriding.
+	if rg.engine.router.defaultHandler != nil {
+		log.Fatal("could not register default handler because it already registered\n")
+	}
+
+	rg.engine.router.defaultHandler = handler
 }
 
 // addRoute functions to register new route with current group prefix.

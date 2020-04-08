@@ -8,8 +8,9 @@ import (
 
 // router defines main router structure.
 type router struct {
-	nodes    map[string]*node
-	handlers map[string][]HandlerFunc
+	nodes          map[string]*node
+	handlers       map[string][]HandlerFunc
+	defaultHandler HandlerFunc
 }
 
 // newRouter is router constructor.
@@ -96,6 +97,24 @@ func (r *router) findRoute(requestMethod, urlPath string) (*node, map[string]str
 	return nil, nil
 }
 
+// notFoundHandler is router default handler.
+func (r *router) notFoundHandler() HandlerFunc {
+	return func(c *Context) {
+		c.String(http.StatusOK, "Nano - 404 %s not found", c.Path)
+	}
+}
+
+// serveDefaultHandler will append default handler to call stacks.
+func (r *router) serveDefaultHandler(c *Context) {
+	// create not found handler when default handler not set yet.
+	if r.defaultHandler == nil {
+		r.defaultHandler = r.notFoundHandler()
+	}
+
+	c.handlers = append(c.handlers, r.defaultHandler)
+	c.Next()
+}
+
 // handle incoming request.
 func (r *router) handle(c *Context) {
 	node, params := r.findRoute(c.Method, c.Path)
@@ -109,7 +128,8 @@ func (r *router) handle(c *Context) {
 		// extract route handler(s).
 		c.handlers = append(c.handlers, r.handlers[key]...)
 	} else {
-		c.String(http.StatusNotFound, "404 not found %s", c.Path)
+		// no matching routes, serve default.
+		r.serveDefaultHandler(c)
 	}
 
 	// call handlers stack.
