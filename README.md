@@ -1,4 +1,4 @@
-<p align="center"><img width="320px" src="https://raw.githubusercontent.com/hariadivicky/logo/master/nano-logo-color.png"></p>h
+<p align="center"><img width="320px" src="https://raw.githubusercontent.com/hariadivicky/logo/master/nano-logo-color.png"></p>
 
 # Nano HTTP Multiplexer
 
