@@ -240,6 +240,31 @@ Get url query
 page := c.Query("page")
 ```
 
+You could check if client need JSON response
+
+```go
+func main() {
+    app := nano.New()
+
+    // simple endpoint to print hello world.
+    app.GET("/", func(c *nano.Context) {
+
+        // client request json response.
+        if c.ExpectJSON() {
+            c.JSON(http.StatusOK, nano.H{
+                "message": "hello world",
+            })
+
+            return
+        }
+
+        c.String(http.StatusOK, "hello world\n")
+    })
+
+    app.Run(":8080")
+}
+```
+
 #### Response
 
 Set response header & content type

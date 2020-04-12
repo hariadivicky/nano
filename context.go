@@ -69,6 +69,12 @@ func (c *Context) Query(key string) string {
 	return c.Request.URL.Query().Get(key)
 }
 
+// ExpectJSON returns true when client request json response
+func (c *Context) ExpectJSON() bool {
+	acceptHeader := c.Request.Header.Get("Accept")
+	return acceptHeader == "application/json"
+}
+
 // JSON functions to write json response.
 func (c *Context) JSON(statusCode int, object interface{}) {
 	c.SetContentType("application/json")
