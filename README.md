@@ -231,13 +231,25 @@ log.Println(c.Method, c.Path)
 Get field value from request body
 
 ```go
-username := c.FormValue("username")
+username := c.PostForm("username")
+```
+
+Get field value with default value from request body
+
+```go
+status := c.PostFormDefault("status", "active")
 ```
 
 Get url query
 
 ```go
 page := c.Query("page")
+```
+
+Get url query with default value
+
+```go
+page := c.QueryDefault("page", 1).(int)
 ```
 
 You could check if client need JSON response
