@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 // Context defines nano request - response context.
@@ -72,7 +73,7 @@ func (c *Context) Query(key string) string {
 // ExpectJSON returns true when client request json response
 func (c *Context) ExpectJSON() bool {
 	acceptHeader := c.Request.Header.Get("Accept")
-	return acceptHeader == "application/json"
+	return strings.Contains(acceptHeader, "application/json")
 }
 
 // JSON functions to write json response.
