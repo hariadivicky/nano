@@ -10,7 +10,7 @@ func main() {
 	app := nano.New()
 
 	// simple endpoint to print hello world.
-	app.GET("/", func(c *nano.Context) {
+	app.POST("/", func(c *nano.Context) {
 		c.String(http.StatusOK, "hello world\n")
 	})
 

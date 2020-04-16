@@ -65,9 +65,31 @@ func (c *Context) PostForm(key string) string {
 	return c.Request.FormValue(key)
 }
 
+// PostFormDefault return default value when form body field is empty.
+func (c *Context) PostFormDefault(key string, defaultValue interface{}) interface{} {
+	v := c.PostForm(key)
+
+	if v == "" {
+		return defaultValue
+	}
+
+	return v
+}
+
 // Query functions to get url query.
 func (c *Context) Query(key string) string {
 	return c.Request.URL.Query().Get(key)
+}
+
+// QueryDefault return default value when url query is empty
+func (c *Context) QueryDefault(key string, defaultValue interface{}) interface{} {
+	v := c.Query(key)
+
+	if v == "" {
+		return defaultValue
+	}
+
+	return v
 }
 
 // ExpectJSON returns true when client request json response
