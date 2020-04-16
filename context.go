@@ -92,6 +92,17 @@ func (c *Context) QueryDefault(key string, defaultValue interface{}) interface{}
 	return v
 }
 
+// IsJSON returns true when client send json body.
+func (c *Context) IsJSON() bool {
+	contentType := c.Request.Header.Get("Content-Type")
+	return contentType == "application/json"
+}
+
+// ParseJSONBody functions to parse json request body.
+func (c *Context) ParseJSONBody(body interface{}) error {
+	return json.NewDecoder(c.Request.Body).Decode(&body)
+}
+
 // ExpectJSON returns true when client request json response
 func (c *Context) ExpectJSON() bool {
 	acceptHeader := c.Request.Header.Get("Accept")
