@@ -103,7 +103,7 @@ func main() {
 
 ### Default Route Handler
 
-You could register you own register handler, the default handler will called when there is not matching route found. If you doesn't set the default handler, nano will register default 404 response as default handler.
+You could register you own default handler, the default handler will called when there is not matching route found. If you doesn't set the default handler, nano will register default 404 response as default handler.
 
 ```go
 app.Default(func(c *nano.Context) {
