@@ -13,6 +13,7 @@ type Context struct {
 	Writer   http.ResponseWriter
 	Method   string
 	Path     string
+	Origin   string
 	Params   map[string]string
 	handlers []HandlerFunc
 	cursor   int // used for handlers stack.
@@ -25,6 +26,7 @@ func newContext(w http.ResponseWriter, r *http.Request) *Context {
 		Writer:  w,
 		Method:  r.Method,
 		Path:    r.URL.Path,
+		Origin:  r.Header.Get("Origin"),
 		cursor:  -1,
 	}
 }
