@@ -7,7 +7,7 @@ import (
 	"runtime"
 )
 
-// Recovery middleware functions to recover when panic was fired.
+// Recovery middleware is functions to recover when panic was fired.
 func Recovery() HandlerFunc {
 	return func(c *Context) {
 

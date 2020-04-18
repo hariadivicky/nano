@@ -31,7 +31,7 @@ func newContext(w http.ResponseWriter, r *http.Request) *Context {
 	}
 }
 
-// Next functions to move cursor to the next handler stack.
+// Next is functions to move cursor to the next handler stack.
 func (c *Context) Next() {
 	// moving cursor.
 	c.cursor++
@@ -41,28 +41,28 @@ func (c *Context) Next() {
 	}
 }
 
-// Status functions to set http status code response.
+// Status is functions to set http status code response.
 func (c *Context) Status(statusCode int) {
 	c.Writer.WriteHeader(statusCode)
 }
 
-// SetHeader functions to set http response header.
+// SetHeader is functions to set http response header.
 func (c *Context) SetHeader(key, value string) {
 	c.Writer.Header().Set(key, value)
 }
 
-// SetContentType functions to set http content type response header.
+// SetContentType is functions to set http content type response header.
 func (c *Context) SetContentType(contentType string) {
 	c.SetHeader("Content-Type", contentType)
 }
 
-// Param functions to get request parameter.
+// Param functions is to get request parameter.
 func (c *Context) Param(key string) string {
 	value, _ := c.Params[key]
 	return value
 }
 
-// PostForm functions to form body field.
+// PostForm is functions to form body field.
 func (c *Context) PostForm(key string) string {
 	return c.Request.FormValue(key)
 }
@@ -78,7 +78,7 @@ func (c *Context) PostFormDefault(key string, defaultValue interface{}) interfac
 	return v
 }
 
-// Query functions to get url query.
+// Query is functions to get url query.
 func (c *Context) Query(key string) string {
 	return c.Request.URL.Query().Get(key)
 }
@@ -100,7 +100,7 @@ func (c *Context) IsJSON() bool {
 	return contentType == "application/json"
 }
 
-// ParseJSONBody functions to parse json request body.
+// ParseJSONBody is functions to parse json request body.
 func (c *Context) ParseJSONBody(body interface{}) error {
 	return json.NewDecoder(c.Request.Body).Decode(&body)
 }
@@ -111,7 +111,7 @@ func (c *Context) ExpectJSON() bool {
 	return strings.Contains(acceptHeader, "application/json")
 }
 
-// JSON functions to write json response.
+// JSON is functions to write json response.
 func (c *Context) JSON(statusCode int, object interface{}) {
 	c.SetContentType("application/json")
 	c.Status(statusCode)
@@ -122,7 +122,7 @@ func (c *Context) JSON(statusCode int, object interface{}) {
 	}
 }
 
-// String functions to write plain text response.
+// String is functions to write plain text response.
 func (c *Context) String(statusCode int, template string, value ...interface{}) {
 	c.SetContentType("text/plain")
 	c.Status(statusCode)
@@ -132,14 +132,14 @@ func (c *Context) String(statusCode int, template string, value ...interface{}) 
 	c.Writer.Write([]byte(text))
 }
 
-// HTML functions to write html response.
+// HTML is functions to write html response.
 func (c *Context) HTML(statusCode int, html string) {
 	c.SetContentType("text/html")
 	c.Status(statusCode)
 	c.Writer.Write([]byte(html))
 }
 
-// Data functions to write binary response.
+// Data is functions to write binary response.
 func (c *Context) Data(statusCode int, binary []byte) {
 	c.Status(statusCode)
 	c.Writer.Write(binary)

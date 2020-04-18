@@ -42,7 +42,7 @@ func createURLParts(urlPattern string) []string {
 	return urlParts
 }
 
-// addRoute functions to register route to router.
+// addRoute is functions to register route to router.
 func (r *router) addRoute(requestMethod, urlPattern string, handler ...HandlerFunc) {
 	urlParts := createURLParts(urlPattern)
 
@@ -62,7 +62,7 @@ func (r *router) addRoute(requestMethod, urlPattern string, handler ...HandlerFu
 	r.handlers[key] = handler
 }
 
-// findRoute functions to matching current request with route node.
+// findRoute is functions to matching current request with route node.
 func (r *router) findRoute(requestMethod, urlPath string) (*node, map[string]string) {
 	searchParts := createURLParts(urlPath)
 	params := make(map[string]string)

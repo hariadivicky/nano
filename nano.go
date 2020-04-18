@@ -45,12 +45,12 @@ func New() *Engine {
 	return engine
 }
 
-// Use functions to apply middleware function(s).
+// Use is functions to apply middleware function(s).
 func (rg *RouterGroup) Use(middlewares ...HandlerFunc) {
 	rg.middlewares = append(rg.middlewares, middlewares...)
 }
 
-// Group functions to create new router group.
+// Group is functions to create new router group.
 func (rg *RouterGroup) Group(prefix string) *RouterGroup {
 	group := &RouterGroup{
 		prefix: rg.prefix + prefix,
@@ -63,27 +63,27 @@ func (rg *RouterGroup) Group(prefix string) *RouterGroup {
 	return group
 }
 
-// GET functions to register route with GET request method.
+// GET is functions to register route with GET request method.
 func (rg *RouterGroup) GET(urlPattern string, handler ...HandlerFunc) {
 	rg.addRoute(http.MethodGet, urlPattern, handler...)
 }
 
-// POST functions to register route with POST request method.
+// POST is functions to register route with POST request method.
 func (rg *RouterGroup) POST(urlPattern string, handler HandlerFunc) {
 	rg.addRoute(http.MethodPost, urlPattern, handler)
 }
 
-// PUT functions to register route with PUT request method.
+// PUT is functions to register route with PUT request method.
 func (rg *RouterGroup) PUT(urlPattern string, handler HandlerFunc) {
 	rg.addRoute(http.MethodPut, urlPattern, handler)
 }
 
-// DELETE functions to register route with DELETE request method.
+// DELETE is functions to register route with DELETE request method.
 func (rg *RouterGroup) DELETE(urlPattern string, handler HandlerFunc) {
 	rg.addRoute(http.MethodDelete, urlPattern, handler)
 }
 
-// Default functions to register default handler when no matching routes.
+// Default is functions to register default handler when no matching routes.
 // Only one Default handler allowed to register.
 func (rg *RouterGroup) Default(handler HandlerFunc) {
 	// reject overriding.
@@ -94,7 +94,7 @@ func (rg *RouterGroup) Default(handler HandlerFunc) {
 	rg.engine.router.defaultHandler = handler
 }
 
-// addRoute functions to register new route with current group prefix.
+// addRoute is functions to register new route with current group prefix.
 func (rg *RouterGroup) addRoute(requestMethod, urlPattern string, handler ...HandlerFunc) {
 	// append router group prefix.
 	prefixedURLPattern := rg.prefix + urlPattern
