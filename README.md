@@ -82,7 +82,7 @@ $ go run example.go
 
 ## API Usages
 
-You can find a ready-to-run examples at [Nano examples directory](https://github.com/hariadivicky/nano-examples).
+You can find a ready-to-run examples at [Todo List Example](https://github.com/hariadivicky/nano-example).
 
 ### Using GET, POST, PUT, and DELETE
 
