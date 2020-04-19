@@ -21,6 +21,9 @@ Nano is a simple & elegant HTTP multiplexer written in Go (Golang). It features 
   - [Nano Context](#nano-context)
     - [Request](#request)
     - [Response](#response)
+- [Nano Middlewares](#nano-middlewares)
+  - [Recovery Middleware](#recovery-middleware)
+  - [CORS Middleware](#cors-middleware)
 - [Users](#users)
 - [License](#license)
 
@@ -343,6 +346,50 @@ Binary response
 
 ```go
 c.Data(http.StatusOK, binaryData)
+```
+
+## Nano Middlewares
+
+Nano has shipped with some default middleware like cors and recovery middleware.
+
+### Recovery Middleware
+
+Recovery middleware is functions to recover server when panic was fired.
+
+```go
+func main() {
+    app := nano.New()
+    app.Use(nano.Recovery())
+
+    app.GET("/", func(c *nano.Context) {
+        stack := make([]string, 0)
+
+        c.String(http.StatusOK, "100th stack is %s", stack[99])
+    })
+
+    app.Run(":8080")
+}
+```
+
+### CORS Middleware
+
+This middleware is used to deal with cross-origin request.
+
+```go
+func main() {
+    app := nano.New()
+
+    // Only allow from :3000 and google.
+    cors := nano.CORSWithConfig(nano.CORSConfig{
+        AllowedOrigins: []string{"http://localhost:3000", "https://wwww.google.com"},
+        AllowedMethods: []string{http.MethodGet, http.MethodPost, http.MethodDelete, http.MethodPut}
+        AllowedHeaders: []string{"Content-Type", "Accept"},
+    })
+
+    app.Use(cors)
+
+    // ...
+}
 ```
 
 ## Users
