@@ -68,7 +68,7 @@ func (c *Context) PostForm(key string) string {
 }
 
 // PostFormDefault return default value when form body field is empty.
-func (c *Context) PostFormDefault(key string, defaultValue interface{}) interface{} {
+func (c *Context) PostFormDefault(key string, defaultValue string) string {
 	v := c.PostForm(key)
 
 	if v == "" {
@@ -84,7 +84,7 @@ func (c *Context) Query(key string) string {
 }
 
 // QueryDefault return default value when url query is empty
-func (c *Context) QueryDefault(key string, defaultValue interface{}) interface{} {
+func (c *Context) QueryDefault(key string, defaultValue string) string {
 	v := c.Query(key)
 
 	if v == "" {

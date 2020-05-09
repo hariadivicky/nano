@@ -252,7 +252,7 @@ page := c.Query("page")
 Get url query with default value
 
 ```go
-page := c.QueryDefault("page", 1).(int)
+page := c.QueryDefault("page", "1")
 ```
 
 You could check if client need JSON response
