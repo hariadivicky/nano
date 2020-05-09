@@ -382,7 +382,7 @@ func main() {
     // Only allow from :3000 and google.
     cors := nano.CORSWithConfig(nano.CORSConfig{
         AllowedOrigins: []string{"http://localhost:3000", "https://wwww.google.com"},
-        AllowedMethods: []string{http.MethodGet, http.MethodPost, http.MethodDelete, http.MethodPut}
+        AllowedMethods: []string{http.MethodGet, http.MethodPost, http.MethodDelete, http.MethodPut},
         AllowedHeaders: []string{"Content-Type", "Accept"},
     })
 
