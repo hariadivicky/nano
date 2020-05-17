@@ -37,12 +37,12 @@ func main() {
 
 	go shutdownHandler(server, shutdown, done)
 
-	log.Println("server started")
+	log.Println("server running")
 	server.ListenAndServe()
 
 	// waiting web server to complete shutdown.
 	<-done
-	log.Println("server exited")
+	log.Println("server closed")
 }
 
 // shutdownHandler do the graceful shutdown to web server.
@@ -51,7 +51,7 @@ func main() {
 func shutdownHandler(server *http.Server, shutdown <-chan os.Signal, done chan struct{}) {
 	// waiting for shutdown signal.
 	<-shutdown
-	log.Println("server exiting...")
+	log.Println("shutting down...")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
