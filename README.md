@@ -24,6 +24,7 @@ Nano is a simple & elegant HTTP multiplexer written in Go (Golang). It features 
 - [Nano Middlewares](#nano-middlewares)
   - [Recovery Middleware](#recovery-middleware)
   - [CORS Middleware](#cors-middleware)
+  - [Gzip Middleware](#gzip-middleware)
 - [Users](#users)
 - [License](#license)
 
@@ -391,6 +392,22 @@ func main() {
     // ...
 }
 ```
+
+### Gzip Middleware
+
+Gzip middleware is used for http response compression.
+
+```go
+func main() {
+    app := nano.New()
+
+    app.Use(nano.Gzip(gzip.DefaultCompression))
+
+    // ...
+}
+```
+
+don't forget to import `compress/gzip` package for compression level at this example. available compression levels are: `gzip.NoCompression`, `gzip.BestSpeed`, `gzip.BestCompression`, `gzip.DefaultCompression`, and `gzip.HuffmanOnly`
 
 ## Users
 
