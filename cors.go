@@ -167,12 +167,12 @@ func (cors *CORS) handlePrefilghtRequest(c *Context) {
 		return
 	}
 
-	requestedMethod := c.Request.Header.Get("Access-Control-Request-Method")
+	requestedMethod := c.GetRequestHeader(HeaderAccessControlRequestMethod)
 	if !cors.isMethodAllowed(requestedMethod) {
 		return
 	}
 
-	requestedHeader := c.Request.Header.Get("Access-Control-Request-Header")
+	requestedHeader := c.GetRequestHeader(HeaderAccessControlRequestHeader)
 	requestedHeaders := parseRequestHeader(requestedHeader)
 
 	if len(requestedHeaders) > 0 {
@@ -182,18 +182,18 @@ func (cors *CORS) handlePrefilghtRequest(c *Context) {
 	}
 
 	// vary must be set.
-	c.SetHeader("Vary", "Origin, Access-Control-Request-Methods, Access-Control-Request-Header")
+	c.SetHeader(HeaderVary, "Origin, Access-Control-Request-Methods, Access-Control-Request-Header")
 
 	if cors.isAllowAllOrigin() {
-		c.SetHeader("Access-Control-Allow-Origin", "*")
+		c.SetHeader(HeaderAccessControlAllowOrigin, "*")
 	} else {
-		c.SetHeader("Access-Control-Allow-Origin", c.Origin)
+		c.SetHeader(HeaderAccessControlAllowOrigin, c.Origin)
 	}
 
-	c.SetHeader("Access-Control-Allow-Methods", cors.mergeMethods())
+	c.SetHeader(HeaderAccessControlAllowMethods, cors.mergeMethods())
 
 	if len(requestedHeader) > 0 {
-		c.SetHeader("Access-Control-Allow-Header", requestedHeader)
+		c.SetHeader(HeaderAccessControlAllowHeader, requestedHeader)
 	}
 }
 
@@ -208,12 +208,12 @@ func (cors *CORS) handleSimpleRequest(c *Context) {
 	}
 
 	// vary must be set.
-	c.SetHeader("Vary", "Origin")
+	c.SetHeader(HeaderVary, HeaderOrigin)
 
 	if cors.isAllowAllOrigin() {
-		c.SetHeader("Access-Control-Allow-Origin", "*")
+		c.SetHeader(HeaderAccessControlAllowOrigin, "*")
 	} else {
-		c.SetHeader("Access-Control-Allow-Origin", c.Origin)
+		c.SetHeader(HeaderAccessControlAllowOrigin, c.Origin)
 	}
 }
 
@@ -230,7 +230,7 @@ func (cors *CORS) Handle(c *Context) {
 	// preflighted requests first send an HTTP request by the OPTIONS method to the resource on the other domain,
 	// in order to determine whether the actual request is safe to send.
 	// Cross-site requests are preflighted like this since they may have implications to user data.
-	if c.Method == http.MethodOptions && c.Request.Header.Get("Access-Control-Request-Method") != "" {
+	if c.Method == http.MethodOptions && c.GetRequestHeader(HeaderAccessControlRequestMethod) != "" {
 		cors.handlePrefilghtRequest(c)
 		return
 	}

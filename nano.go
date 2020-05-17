@@ -10,6 +10,40 @@ import (
 	"strings"
 )
 
+const (
+	// HeaderAcceptEncoding is accept encoding.
+	HeaderAcceptEncoding = "Accept-Encoding"
+	// HeaderContentEncoding is content encoding.
+	HeaderContentEncoding = "Content-Encoding"
+	// HeaderContentLength is content length.
+	HeaderContentLength = "Content-Length"
+	// HeaderContentType is content type.
+	HeaderContentType = "Content-Type"
+	// HeaderAccept is accept content type.
+	HeaderAccept = "Accept"
+	// HeaderOrigin is request origin.
+	HeaderOrigin = "Origin"
+	// HeaderVary is request vary.
+	HeaderVary = "Vary"
+	// HeaderAccessControlRequestMethod is cors request method.
+	HeaderAccessControlRequestMethod = "Access-Control-Request-Method"
+	// HeaderAccessControlRequestHeader is cors request header.
+	HeaderAccessControlRequestHeader = "Access-Control-Request-Header"
+	// HeaderAccessControlAllowOrigin is cors allowed origins.
+	HeaderAccessControlAllowOrigin = "Access-Control-Allow-Origin"
+	// HeaderAccessControlAllowMethods is cors allowed origins.
+	HeaderAccessControlAllowMethods = "Access-Control-Allow-Methods"
+	// HeaderAccessControlAllowHeader is cors allowed headers.
+	HeaderAccessControlAllowHeader = "Access-Control-Allow-Header"
+
+	// MimeJSON is standard json mime.
+	MimeJSON = "application/json"
+	// MimeHTML is standard html mime.
+	MimeHTML = "text/html"
+	// MimePlainText is standard plain text mime.
+	MimePlainText = "text/plain"
+)
+
 // Engine defines nano web engine.
 type Engine struct {
 	*RouterGroup

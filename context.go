@@ -26,7 +26,7 @@ func newContext(w http.ResponseWriter, r *http.Request) *Context {
 		Writer:  w,
 		Method:  r.Method,
 		Path:    r.URL.Path,
-		Origin:  r.Header.Get("Origin"),
+		Origin:  r.Header.Get(HeaderOrigin),
 		cursor:  -1,
 	}
 }
@@ -51,9 +51,14 @@ func (c *Context) SetHeader(key, value string) {
 	c.Writer.Header().Set(key, value)
 }
 
+// GetRequestHeader returns header value by given key.
+func (c *Context) GetRequestHeader(key string) string {
+	return c.Request.Header.Get(key)
+}
+
 // SetContentType is functions to set http content type response header.
 func (c *Context) SetContentType(contentType string) {
-	c.SetHeader("Content-Type", contentType)
+	c.SetHeader(HeaderContentType, contentType)
 }
 
 // Param functions is to get request parameter.
@@ -96,8 +101,7 @@ func (c *Context) QueryDefault(key string, defaultValue string) string {
 
 // IsJSON returns true when client send json body.
 func (c *Context) IsJSON() bool {
-	contentType := c.Request.Header.Get("Content-Type")
-	return contentType == "application/json"
+	return c.GetRequestHeader(HeaderContentType) == MimeJSON
 }
 
 // ParseJSONBody is functions to parse json request body.
@@ -107,13 +111,12 @@ func (c *Context) ParseJSONBody(body interface{}) error {
 
 // ExpectJSON returns true when client request json response
 func (c *Context) ExpectJSON() bool {
-	acceptHeader := c.Request.Header.Get("Accept")
-	return strings.Contains(acceptHeader, "application/json")
+	return strings.Contains(c.GetRequestHeader(HeaderAccept), MimeJSON)
 }
 
 // JSON is functions to write json response.
 func (c *Context) JSON(statusCode int, object interface{}) {
-	c.SetContentType("application/json")
+	c.SetContentType(MimeJSON)
 	c.Status(statusCode)
 
 	encoder := json.NewEncoder(c.Writer)
@@ -124,7 +127,7 @@ func (c *Context) JSON(statusCode int, object interface{}) {
 
 // String is functions to write plain text response.
 func (c *Context) String(statusCode int, template string, value ...interface{}) {
-	c.SetContentType("text/plain")
+	c.SetContentType(MimePlainText)
 	c.Status(statusCode)
 
 	text := fmt.Sprintf(template, value...)
@@ -134,7 +137,7 @@ func (c *Context) String(statusCode int, template string, value ...interface{}) 
 
 // HTML is functions to write html response.
 func (c *Context) HTML(statusCode int, html string) {
-	c.SetContentType("text/html")
+	c.SetContentType(MimeHTML)
 	c.Status(statusCode)
 	c.Writer.Write([]byte(html))
 }
