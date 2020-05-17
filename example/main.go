@@ -20,7 +20,7 @@ func main() {
 		c.String(http.StatusOK, "hello world\n")
 	})
 
-	// below is logic to gracefuly shutdown the web server.
+	// below is logic to gracefully shutdown the web server.
 	// done channel is used to notify when the shutting down process is complete.
 	done := make(chan struct{})
 	shutdown := make(chan os.Signal)
@@ -46,7 +46,7 @@ func main() {
 }
 
 // shutdownHandler do the graceful shutdown to web server.
-// when shutdown signal occured, it will wait all active request to completly receive their responses.
+// when shutdown signal occurred, it will wait all active request to completly receive their responses.
 // we will wait all unfinished request until 30 seconds.
 func shutdownHandler(server *http.Server, shutdown <-chan os.Signal, done chan struct{}) {
 	// waiting for shutdown signal.

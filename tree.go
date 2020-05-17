@@ -25,7 +25,7 @@ func (n *node) insertChildren(urlPattern string, urlParts []string, level int) {
 
 	urlPart := urlParts[level]
 
-	// scan existance of current url part in children list.
+	// scan existence of current url part in children list.
 	child := n.findChildren(urlPart)
 	if child == nil {
 		// current url part is not already registered as children node.
