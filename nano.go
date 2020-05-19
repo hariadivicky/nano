@@ -38,10 +38,16 @@ const (
 
 	// MimeJSON is standard json mime.
 	MimeJSON = "application/json"
+	// MimeXML is standard json mime.
+	MimeXML = "application/xml"
 	// MimeHTML is standard html mime.
 	MimeHTML = "text/html"
 	// MimePlainText is standard plain text mime.
 	MimePlainText = "text/plain"
+	// MimeMultipartForm is standard multipart form mime.
+	MimeMultipartForm = "multipart/form-data"
+	// MimeFormURLEncoded is standard urlencoded form mime.
+	MimeFormURLEncoded = "application/x-www-form-urlencoded"
 )
 
 // Engine defines nano web engine.

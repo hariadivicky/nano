@@ -14,6 +14,11 @@ Nano is a simple & elegant HTTP multiplexer written in Go (Golang). It features 
   - [Using GET,POST,PUT, and DELETE](#using-get-post-put-and-delete)
   - [Default Route Handler](#default-route-handler)
   - [Router Parameter](#router-parameter)
+  - [Request Binding](#request-binding)
+    - [Bind URL Query](#bind-url-query)
+    - [Bind Multipart Form](#bind-multipart-form)
+    - [Bind JSON](#bind-json)
+    - [Error Binding](#error-binding)
   - [Grouping Routes](#grouping-routes)
   - [Writing Middleware](#writing-middleware)
   - [Using Middleware](#using-middleware)
@@ -133,6 +138,77 @@ func main() {
     })
 }
 ```
+
+### Request Binding
+
+To use request binding you must provide "form" or "json" tag to each field in your struct. You can also add `rules:"required"` to marks a field as required for binding validation
+
+```go
+type Address struct {
+    Street     string `form:"street" json:"street"`
+    PostalCode string `form:"postal_code" json:"postal_code"`
+    CityID     int    `form:"city_id" json:"city_id" rules:"required"`
+}
+```
+
+By calling `c.Bind` function, it's will returns `*nano.BindingError` when an error occured due to deserialization error or validation error
+
+```go
+
+app.GET("/address", func(c *nano.Context) {
+    var address Address
+    if err := c.Bind(&address); err != nil {
+        c.String(err.HTTPStatusCode, err.Message)
+        return
+    }
+
+    c.String(http.StatusOK, "city id: %d, postal code: %s", address.CityID, address.PostalCode)
+})
+
+```
+
+`c.Bind` automatically choose deserialization source based on your request Content-Type and request method. `GET` and `HEAD` methods will try to bind url query or urlencoded form. Otherwise, it will try to bind multipart form or json.
+
+but if you want to manually choose the binding source, you could uses this functions below:
+
+#### Bind URL Query
+
+If you want to bind url query like `page=1&limit=50` or urlencoded form you could use `nano.BindSimpleForm`
+
+```go
+var paging Pagination
+err := nano.BindSimpleForm(c.Request, &paging)
+```
+
+#### Bind Multipart Form
+
+You could use `nano.BindMultipartForm` to bind request body with `multipart/form-data` type
+
+```go
+var post BlogPost
+err := nano.BindMultipartForm(c.Request, &post)
+```
+
+#### Bind JSON
+
+if you have request with `application/json` type, you could bind it using `nano.BindJSON` function
+
+```go
+var schema ComplexSchema
+err := nano.BindJSON(c.Request, &schema)
+```
+
+#### Error Binding
+
+Each you call `Bind`, `BindSimpleForm`, `BindMultipartForm`, and `BindJSON` it's always returns `*nano.ErrorBinding,` except when binding success without any errors it returns `nil`. ErrorBinding has two field that are HTTPStatusCode & Message. Here is the details:
+
+|   | HTTPStatusCode | Reason                                                          |
+|---|----------------|-----------------------------------------------------------------|
+| 1 | 500            | Conversion Error or Give non-pointer to target struct parameter |
+| 2 | 420            | Validation Error                                                |
+| 3 | 400            | Deserialization Error                                           |
+
+`ErrorBinding.HTTPStatusCode` is useful to determine response code
 
 ### Grouping Routes
 

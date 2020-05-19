@@ -99,6 +99,16 @@ func (c *Context) QueryDefault(key string, defaultValue string) string {
 	return v
 }
 
+// Bind request body into defined user struct.
+// This function help you to automatic binding based on request Content-Type & request method.
+// If you want to chooose binding method manualy, you could use :
+// BindSimpleForm to bind urlencoded form & url query,
+// BindMultipartForm to bind multipart/form data,
+// and BindJSON to bind application/json request body.
+func (c *Context) Bind(targetStruct interface{}) *BindingError {
+	return bind(c, targetStruct)
+}
+
 // IsJSON returns true when client send json body.
 func (c *Context) IsJSON() bool {
 	return c.GetRequestHeader(HeaderContentType) == MimeJSON
