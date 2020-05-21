@@ -114,25 +114,23 @@ func (c *Context) IsJSON() bool {
 	return c.GetRequestHeader(HeaderContentType) == MimeJSON
 }
 
-// ParseJSONBody is functions to parse json request body.
-func (c *Context) ParseJSONBody(body interface{}) error {
-	return json.NewDecoder(c.Request.Body).Decode(&body)
-}
-
-// ExpectJSON returns true when client request json response
+// ExpectJSON returns true when client request json response,
+// since this function use string.Contains, value ordering in Accept values doesn't matter.
 func (c *Context) ExpectJSON() bool {
 	return strings.Contains(c.GetRequestHeader(HeaderAccept), MimeJSON)
 }
 
 // JSON is functions to write json response.
 func (c *Context) JSON(statusCode int, object interface{}) {
+	rs, err := json.Marshal(object)
+	if err != nil {
+		c.String(http.StatusInternalServerError, "internal server error")
+		return
+	}
+
 	c.SetContentType(MimeJSON)
 	c.Status(statusCode)
-
-	encoder := json.NewEncoder(c.Writer)
-	if err := encoder.Encode(object); err != nil {
-		http.Error(c.Writer, err.Error(), http.StatusInternalServerError)
-	}
+	c.Writer.Write(rs)
 }
 
 // String is functions to write plain text response.
