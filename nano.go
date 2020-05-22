@@ -5,7 +5,7 @@
 package nano
 
 import (
-	"log"
+	"errors"
 	"net/http"
 	"strings"
 )
@@ -48,6 +48,11 @@ const (
 	MimeMultipartForm = "multipart/form-data"
 	// MimeFormURLEncoded is standard urlencoded form mime.
 	MimeFormURLEncoded = "application/x-www-form-urlencoded"
+)
+
+var (
+	// ErrDefaultHandler should be returned when user try to set default handler for seconds time.
+	ErrDefaultHandler = errors.New("default handler already registered")
 )
 
 // Engine defines nano web engine.
@@ -125,13 +130,14 @@ func (rg *RouterGroup) DELETE(urlPattern string, handler HandlerFunc) {
 
 // Default is functions to register default handler when no matching routes.
 // Only one Default handler allowed to register.
-func (rg *RouterGroup) Default(handler HandlerFunc) {
+func (rg *RouterGroup) Default(handler HandlerFunc) error {
 	// reject overriding.
 	if rg.engine.router.defaultHandler != nil {
-		log.Fatal("could not register default handler because it already registered\n")
+		return ErrDefaultHandler
 	}
 
 	rg.engine.router.defaultHandler = handler
+	return nil
 }
 
 // addRoute is functions to register new route with current group prefix.

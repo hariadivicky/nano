@@ -21,13 +21,13 @@ func Gzip(compressionLevel int) HandlerFunc {
 			return
 		}
 
-		c.SetHeader(HeaderContentEncoding, "gzip")
 		gz, err := gzip.NewWriterLevel(c.Writer, compressionLevel)
 		// this error may caused incorrect compression level value.
 		if err != nil {
 			c.String(http.StatusInternalServerError, "internal server error")
 			return
 		}
+		c.SetHeader(HeaderContentEncoding, "gzip")
 		defer gz.Close()
 
 		gzWriter := &gzipWriter{c.Writer, gz}
