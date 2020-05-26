@@ -12,10 +12,7 @@ import (
 func BindJSON(r *http.Request, targetStruct interface{}) *BindingError {
 	// only accept pointer
 	if reflect.TypeOf(targetStruct).Kind() != reflect.Ptr {
-		return &BindingError{
-			Message:        "expected pointer to target struct, got non-pointer",
-			HTTPStatusCode: http.StatusInternalServerError,
-		}
+		return &ErrBindNonPointer
 	}
 
 	if r.Body != nil {

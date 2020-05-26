@@ -7,14 +7,19 @@ import (
 	"strings"
 )
 
+var (
+	// ErrBindNonPointer must be returned when non-pointer struct passed as targetStruct parameter.
+	ErrBindNonPointer = BindingError{
+		Message:        "expected pointer to target struct, got non-pointer",
+		HTTPStatusCode: http.StatusInternalServerError,
+	}
+)
+
 // ValidateStruct will call default struct validator and collect error information from each struct field.
 func ValidateStruct(targetStruct interface{}) *BindingError {
 	// only accept pointer
 	if reflect.TypeOf(targetStruct).Kind() != reflect.Ptr {
-		return &BindingError{
-			Message:        "expected pointer to target struct, got non-pointer",
-			HTTPStatusCode: http.StatusInternalServerError,
-		}
+		return &ErrBindNonPointer
 	}
 
 	errorBag := make([]string, 0)

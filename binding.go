@@ -14,6 +14,14 @@ type BindingError struct {
 	Message        string
 }
 
+var (
+	// ErrBindContentType returned when client content type besides json, urlencoded, & multipart form.
+	ErrBindContentType = BindingError{
+		HTTPStatusCode: http.StatusBadRequest,
+		Message:        "unknown content type of request body",
+	}
+)
+
 // bind request body to defined user struct.
 // This function help you to automatic binding based on request Content-Type & request method
 func bind(c *Context, targetStruct interface{}) *BindingError {
@@ -35,10 +43,7 @@ func bind(c *Context, targetStruct interface{}) *BindingError {
 			return BindJSON(c.Request, targetStruct)
 		}
 
-		return &BindingError{
-			HTTPStatusCode: http.StatusBadRequest,
-			Message:        "unknown content type of request body",
-		}
+		return &ErrBindContentType
 	}
 
 	// when client request using GET method, we will serve binding using simple form.
