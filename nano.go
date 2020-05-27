@@ -155,6 +155,18 @@ func (rg *RouterGroup) Default(handler HandlerFunc) error {
 	return nil
 }
 
+// Static will create static file server.
+func (rg *RouterGroup) Static(baseURL string, rootDir http.FileSystem) {
+	if strings.Contains(baseURL, ":") || strings.Contains(baseURL, "*") {
+		panic("cannot use dynamic url parameter in file server base url")
+	}
+
+	urlPattern := baseURL + "/*filepath"
+	handler := fileServerHandler(rg.prefix, baseURL, rootDir)
+	rg.GET(urlPattern, handler)
+	rg.HEAD(urlPattern, handler)
+}
+
 // addRoute is functions to register new route with current group prefix.
 func (rg *RouterGroup) addRoute(requestMethod, urlPattern string, handler ...HandlerFunc) {
 	// append router group prefix.

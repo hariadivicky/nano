@@ -143,6 +143,11 @@ func (c *Context) String(statusCode int, template string, value ...interface{}) 
 	c.Writer.Write([]byte(text))
 }
 
+// File will returns static file as response.
+func (c *Context) File(statusCode int, filepath string) {
+	http.ServeFile(c.Writer, c.Request, filepath)
+}
+
 // HTML is functions to write html response.
 func (c *Context) HTML(statusCode int, html string) {
 	c.SetContentType(MimeHTML)
