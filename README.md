@@ -11,7 +11,7 @@ Nano is a simple & elegant HTTP multiplexer written in Go (Golang). It features 
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [API Usages](#api-usages)
-  - [Using GET,POST,PUT, and DELETE](#using-get-post-put-and-delete)
+  - [Using HEAD, OPTIONS, GET, POST, PUT, PATCH, and DELETE](#using-head-options-get-post-put-patch-and-delete)
   - [Default Route Handler](#default-route-handler)
   - [Router Parameter](#router-parameter)
   - [Request Binding](#request-binding)
@@ -93,16 +93,19 @@ $ go run example.go
 
 You can find a ready-to-run examples at [Todo List Example](https://github.com/hariadivicky/nano-example).
 
-### Using GET, POST, PUT, and DELETE
+### Using HEAD, OPTIONS, GET, POST, PUT, PATCH, and DELETE
 
 ```go
 func main() {
     // Creates a nano router
     app := nano.New()
 
+    app.HEAD("/someHead", headHandler)
+    app.OPTIONS("/someOptions", optionsHandler)
     app.GET("/someGet", getHandler)
     app.POST("/somePost", postHandler)
     app.PUT("/somePut", putHandler)
+    app.PATCH("/somePatch", patchHandler)
     app.DELETE("/someDelete", deleteHandler)
 
     // Run apps.

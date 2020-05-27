@@ -108,6 +108,11 @@ func (rg *RouterGroup) Group(prefix string) *RouterGroup {
 	return group
 }
 
+// HEAD is functions to register route with HEAD request method.
+func (rg *RouterGroup) HEAD(urlPattern string, handler ...HandlerFunc) {
+	rg.addRoute(http.MethodHead, urlPattern, handler...)
+}
+
 // GET is functions to register route with GET request method.
 func (rg *RouterGroup) GET(urlPattern string, handler ...HandlerFunc) {
 	rg.addRoute(http.MethodGet, urlPattern, handler...)
@@ -121,6 +126,16 @@ func (rg *RouterGroup) POST(urlPattern string, handler HandlerFunc) {
 // PUT is functions to register route with PUT request method.
 func (rg *RouterGroup) PUT(urlPattern string, handler HandlerFunc) {
 	rg.addRoute(http.MethodPut, urlPattern, handler)
+}
+
+// OPTIONS is functions to register route with OPTIONS request method.
+func (rg *RouterGroup) OPTIONS(urlPattern string, handler HandlerFunc) {
+	rg.addRoute(http.MethodOptions, urlPattern, handler)
+}
+
+// PATCH is functions to register route with PATCH request method.
+func (rg *RouterGroup) PATCH(urlPattern string, handler HandlerFunc) {
+	rg.addRoute(http.MethodPatch, urlPattern, handler)
 }
 
 // DELETE is functions to register route with DELETE request method.
