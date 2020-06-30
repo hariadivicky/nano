@@ -13,7 +13,8 @@ Nano is a simple & elegant HTTP multiplexer written in Go (Golang). It features 
 - [API Usages](#api-usages)
   - [Using HEAD, OPTIONS, GET, POST, PUT, PATCH, and DELETE](#using-head-options-get-post-put-patch-and-delete)
   - [Default Route Handler](#default-route-handler)
-  - [Router Parameter](#router-parameter)
+  - [Route Parameter](#route-parameter)
+  - [Static File Server](#static-file-server)
   - [Request Binding](#request-binding)
     - [Bind URL Query](#bind-url-query)
     - [Bind Multipart Form](#bind-multipart-form)
@@ -126,7 +127,7 @@ app.Default(func(c *nano.Context) {
 })
 ```
 
-### Router parameter
+### Route Parameter
 
 Get route parameter using `c.Param(key)`
 
@@ -139,6 +140,21 @@ func main() {
         productId := c.Param("productId") //string
         c.String(http.StatusOK, "you requested %s", productId)
     })
+}
+```
+
+### Static File Server
+
+You could use `*nano.Static()` function to serve static files like html, css, and js in your server.
+
+```go
+func main() {
+    app := nano.New()
+
+    assetDir := http.Dir("./statics")
+    app.Static("/assets", assetDir)
+
+    // now your static files are accessible via http://yourhost.com/assets/*
 }
 ```
 
