@@ -57,7 +57,7 @@ func TestCreateRoute(t *testing.T) {
 func TestAddRoute(t *testing.T) {
 	r := newRouter()
 
-	t.Run("existance route", func(st *testing.T) {
+	t.Run("existence route", func(st *testing.T) {
 		emptyHandler := func(c *Context) {}
 
 		tt := []struct {
