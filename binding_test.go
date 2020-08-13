@@ -26,7 +26,7 @@ func TestAutoBindingForUnexpectedContentType(t *testing.T) {
 	}
 
 	var person Person
-	errBinding := bind(ctx, &person)
+	errBinding := ctx.Bind(&person)
 
 	if errBinding.HTTPStatusCode != ErrBindContentType.HTTPStatusCode {
 		t.Errorf("expected error HTTPStatusCode to be %d; got %d", ErrBindContentType.HTTPStatusCode, errBinding.HTTPStatusCode)
@@ -56,7 +56,7 @@ func TestAutoBindingForURLEncoded(t *testing.T) {
 	}
 
 	var person Person
-	errBinding := bind(ctx, &person)
+	errBinding := ctx.Bind(&person)
 
 	if nm := ctx.PostForm("name"); nm != "foo" {
 		t.Fatalf("expected form name value to be foo; got %s", nm)
@@ -91,7 +91,7 @@ func TestAutoBindingForJSON(t *testing.T) {
 	}
 
 	var person Person
-	errBinding := bind(ctx, &person)
+	errBinding := ctx.Bind(&person)
 
 	if errBinding != nil {
 		t.Fatalf("expected err binding to nil")
@@ -127,7 +127,7 @@ func TestAutoBindingForMultipartForm(t *testing.T) {
 	}
 
 	var person Person
-	errBinding := bind(ctx, &person)
+	errBinding := ctx.Bind(&person)
 
 	if errBinding != nil {
 		t.Fatalf("expected err binding to nil; got %s", errBinding.Message)
@@ -140,4 +140,33 @@ func TestAutoBindingForMultipartForm(t *testing.T) {
 	if person.Gender != "male" {
 		t.Errorf("expected gender to be male; got %s", person.Gender)
 	}
+}
+
+func TestBindJSON(t *testing.T) {
+	type Person struct {
+		Name   string
+		Gender string
+	}
+
+	var person Person
+
+	t.Run("bind non pointer struct", func(st *testing.T) {
+		req, err := http.NewRequest(http.MethodGet, "/", nil)
+		if err != nil {
+			log.Fatalf("could not make http request: %v", err)
+		}
+		w := httptest.NewRecorder()
+
+		ctx := newContext(w, req)
+
+		errBinding := ctx.BindJSON(person)
+
+		if errBinding == nil {
+			st.Errorf("expected error to be returned; got %v", errBinding)
+		}
+
+		if errBinding != ErrBindNonPointer {
+			st.Errorf("expect error to be ErrBindNonPointer; got %v", errBinding)
+		}
+	})
 }

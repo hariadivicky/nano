@@ -1,47 +1,42 @@
 package nano
 
 import (
-	"fmt"
 	"net/http"
 	"reflect"
 	"strings"
+
+	"github.com/go-playground/locales/en"
+	ut "github.com/go-playground/universal-translator"
+	"github.com/go-playground/validator/v10"
+	en_translations "github.com/go-playground/validator/v10/translations/en"
 )
 
-var (
-	// ErrBindNonPointer must be returned when non-pointer struct passed as targetStruct parameter.
-	ErrBindNonPointer = BindingError{
-		Message:        "expected pointer to target struct, got non-pointer",
-		HTTPStatusCode: http.StatusInternalServerError,
-	}
-)
+// newTranslator returns validator translation. default using "en"
+func newTranslator() ut.Translator {
+	// NOTE: ommitting allot of error checking for brevity
+	en := en.New()
+	uni := ut.New(en, en)
 
-// ValidateStruct will call default struct validator and collect error information from each struct field.
-func ValidateStruct(targetStruct interface{}) *BindingError {
-	// only accept pointer
-	if reflect.TypeOf(targetStruct).Kind() != reflect.Ptr {
-		return &ErrBindNonPointer
-	}
+	// this is usually know or extracted from http 'Accept-Language' header
+	// also see uni.FindTranslator(...)
+	trans, _ := uni.GetTranslator("en")
+	return trans
+}
 
-	errorBag := make([]string, 0)
+func newValidator(trans ut.Translator) *validator.Validate {
+	v10 := validator.New()
+	v10.RegisterTagNameFunc(func(fld reflect.StructField) string {
+		name := strings.SplitN(fld.Tag.Get("form"), ",", 2)[0]
 
-	// collect error from each field.
-	errorFields := validate(targetStruct, errorBag)
-	if len(errorFields) > 0 {
-		// if only two error fields, just join with & for better message.
-		if len(errorFields) == 2 {
-			return &BindingError{
-				HTTPStatusCode: http.StatusUnprocessableEntity,
-				Message:        fmt.Sprintf("%s fields are required", strings.Join(errorFields, " & ")),
-			}
+		if name == "-" {
+			return ""
 		}
 
-		return &BindingError{
-			HTTPStatusCode: http.StatusUnprocessableEntity,
-			Message:        fmt.Sprintf("%s fields are required", strings.Join(errorFields, ", ")),
-		}
-	}
+		return name
+	})
 
-	return nil
+	en_translations.RegisterDefaultTranslations(v10, trans)
+	return v10
 }
 
 // validate is default struct validator. this function will called when you do request binding to some struct.
@@ -49,52 +44,29 @@ func ValidateStruct(targetStruct interface{}) *BindingError {
 // if you apply "required" rule, that is mean you are not allowed to use zero type value in you request body field
 // because it will give you validation error.
 // so if you need 0 value for int field or false value for boolean field, pelase consider to not use "required" rules.
-func validate(targetStruct interface{}, errFields []string) []string {
-	targetValue := reflect.ValueOf(targetStruct)
-	if reflect.TypeOf(targetStruct).Kind() == reflect.Ptr {
-		targetValue = targetValue.Elem()
-	}
-
-	targetType := targetValue.Type()
-
-	for i := 0; i < targetType.NumField(); i++ {
-		fieldType := targetType.Field(i)
-
-		// skip ignored and unexported fields in the struct
-		if fieldType.Tag.Get("form") == "-" || !targetValue.Field(i).CanInterface() {
-			continue
-		}
-
-		// get real values of field and zero type value.
-		fieldValue := targetValue.Field(i).Interface()
-		zeroValue := reflect.Zero(fieldType.Type).Interface()
-
-		// validate nested struct inside field.
-		if fieldType.Type.Kind() == reflect.Struct && !reflect.DeepEqual(zeroValue, fieldValue) {
-			errFields = validate(fieldValue, errFields)
-		}
-
-		// only validate when tag rules is set to required.
-		if strings.Contains(fieldType.Tag.Get("rules"), "required") {
-			if reflect.DeepEqual(zeroValue, fieldValue) {
-				// use field name as default when json & form tag both are not provided.
-				name := strings.ToLower(fieldType.Name)
-
-				// try to get input name from json tag.
-				// if field has both of json & form tag, appended field name in errFields will taken from form tag.
-				if jsonName := fieldType.Tag.Get("json"); jsonName != "" {
-					name = jsonName
-				}
-
-				// try to get input name from form tag.
-				if formName := fieldType.Tag.Get("form"); formName != "" {
-					name = formName
-				}
-
-				errFields = append(errFields, name)
-			}
+func validate(c *Context, targetStruct interface{}) *BindingError {
+	// only accept pointer
+	if reflect.TypeOf(targetStruct).Kind() != reflect.Ptr {
+		return &BindingError{
+			Message:        "expected pointer to target struct, got non-pointer",
+			HTTPStatusCode: http.StatusInternalServerError,
 		}
 	}
 
-	return errFields
+	err := c.validator.Struct(targetStruct)
+
+	if err != nil {
+		var errFields []string
+		for _, err := range err.(validator.ValidationErrors) {
+			errFields = append(errFields, err.Translate(c.translator))
+		}
+
+		return &BindingError{
+			HTTPStatusCode: http.StatusUnprocessableEntity,
+			Message:        "validation error",
+			Fields:         errFields,
+		}
+	}
+
+	return nil
 }

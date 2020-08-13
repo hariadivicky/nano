@@ -160,17 +160,17 @@ func main() {
 
 ### Request Binding
 
-To use request binding you must provide "form" or "json" tag to each field in your struct. You can also add `rules:"required"` to marks a field as required for binding validation
+To use request binding you must provide `form` tag to each field in your struct. You can also add the validation rules using `validate` tag. to see more about available `validate` tag value, visit [Go Validator](https://github.com/go-playground/validator/)
 
 ```go
 type Address struct {
     Street     string `form:"street" json:"street"`
     PostalCode string `form:"postal_code" json:"postal_code"`
-    CityID     int    `form:"city_id" json:"city_id" rules:"required"`
+    CityID     int    `form:"city_id" json:"city_id" validate:"required"`
 }
 ```
 
-By calling `c.Bind` function, it's will returns `*nano.BindingError` when an error occured due to deserialization error or validation error
+By calling `Bind` function, it's will returns `*nano.BindingError` when an error occured due to deserialization error or validation error. The description about error fields will be stored in `err.Fields`.
 
 ```go
 
@@ -186,35 +186,35 @@ app.GET("/address", func(c *nano.Context) {
 
 ```
 
-`c.Bind` automatically choose deserialization source based on your request Content-Type and request method. `GET` and `HEAD` methods will try to bind url query or urlencoded form. Otherwise, it will try to bind multipart form or json.
+The `Bind` function automatically choose deserialization source based on your request Content-Type and request method. `GET` and `HEAD` methods will try to bind url query or urlencoded form. Otherwise, it will try to bind multipart form or json.
 
 but if you want to manually choose the binding source, you could uses this functions below:
 
 #### Bind URL Query
 
-If you want to bind url query like `page=1&limit=50` or urlencoded form you could use `nano.BindSimpleForm`
+If you want to bind url query like `page=1&limit=50` or urlencoded form you could use `BindSimpleForm`
 
 ```go
 var paging Pagination
-err := nano.BindSimpleForm(c.Request, &paging)
+err := c.BindSimpleForm(&paging)
 ```
 
 #### Bind Multipart Form
 
-You could use `nano.BindMultipartForm` to bind request body with `multipart/form-data` type
+You could use `BindMultipartForm` to bind request body with `multipart/form-data` type
 
 ```go
 var post BlogPost
-err := nano.BindMultipartForm(c.Request, &post)
+err := c.BindMultipartForm(&post)
 ```
 
 #### Bind JSON
 
-if you have request with `application/json` type, you could bind it using `nano.BindJSON` function
+if you have request with `application/json` type, you could bind it using `BindJSON` function
 
 ```go
 var schema ComplexSchema
-err := nano.BindJSON(c.Request, &schema)
+err := c.BindJSON(&schema)
 ```
 
 #### Error Binding
@@ -370,38 +370,6 @@ func main() {
         }
 
         c.String(http.StatusOK, "hello world\n")
-    })
-
-    app.Run(":8080")
-}
-```
-
-Parsing json body request
-
-```go
-type person struct {
-    Name string
-    Age  int
-}
-
-func main() {
-    app := nano.New()
-
-    // simple endpoint to print hello world.
-    app.POST("/person", func(c *nano.Context) {
-        if !c.IsJSON() {
-            c.String(http.StatusBadRequest, "server only accept json request.")
-        }
-
-        form := new(person)
-        // parse json body.
-        err := c.ParseJSONBody(form)
-
-        if err != nil {
-            c.String(http.StatusBadRequest, "bad request.")
-        }
-
-        c.String(http.StatusOK, "hello %s your age is %d \n", form.Name, form.Age)
     })
 
     app.Run(":8080")

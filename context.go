@@ -5,29 +5,40 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
+	ut "github.com/go-playground/universal-translator"
+	"github.com/go-playground/validator/v10"
 )
 
 // Context defines nano request - response context.
 type Context struct {
-	Request  *http.Request
-	Writer   http.ResponseWriter
-	Method   string
-	Path     string
-	Origin   string
-	Params   map[string]string
-	handlers []HandlerFunc
-	cursor   int // used for handlers stack.
+	Request    *http.Request
+	Writer     http.ResponseWriter
+	Method     string
+	Path       string
+	Origin     string
+	Params     map[string]string
+	handlers   []HandlerFunc
+	cursor     int // used for handlers stack.
+	validator  *validator.Validate
+	translator ut.Translator
 }
 
 // newContext is Context constructor.
 func newContext(w http.ResponseWriter, r *http.Request) *Context {
+
+	trans := newTranslator()
+	validator := newValidator(trans)
+
 	return &Context{
-		Request: r,
-		Writer:  w,
-		Method:  r.Method,
-		Path:    r.URL.Path,
-		Origin:  r.Header.Get(HeaderOrigin),
-		cursor:  -1,
+		Request:    r,
+		Writer:     w,
+		Method:     r.Method,
+		Path:       r.URL.Path,
+		Origin:     r.Header.Get(HeaderOrigin),
+		cursor:     -1,
+		validator:  validator,
+		translator: trans,
 	}
 }
 
@@ -97,16 +108,6 @@ func (c *Context) QueryDefault(key string, defaultValue string) string {
 	}
 
 	return v
-}
-
-// Bind request body into defined user struct.
-// This function help you to automatic binding based on request Content-Type & request method.
-// If you want to chooose binding method manually, you could use :
-// BindSimpleForm to bind urlencoded form & url query,
-// BindMultipartForm to bind multipart/form data,
-// and BindJSON to bind application/json request body.
-func (c *Context) Bind(targetStruct interface{}) *BindingError {
-	return bind(c, targetStruct)
 }
 
 // IsJSON returns true when client send json body.

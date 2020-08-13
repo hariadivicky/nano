@@ -2,14 +2,23 @@ package nano
 
 import (
 	"net/http"
+	"net/http/httptest"
 	"testing"
 )
 
+func setupContext() *Context {
+	r, _ := http.NewRequest(http.MethodGet, "/", nil)
+	w := httptest.NewRecorder()
+
+	return newContext(w, r)
+
+}
+
 func TestValidator(t *testing.T) {
 	type Person struct {
-		Name         string `form:"name" json:"name" rules:"required"`
-		Gender       string `form:"gender" json:"gender" rules:"required"`
-		Email        string `form:"email" json:"email" rules:"required"`
+		Name         string `form:"name" json:"name" validate:"required"`
+		Gender       string `form:"gender" json:"gender" validate:"required"`
+		Email        string `form:"email" json:"email" validate:"required"`
 		Phone        string `form:"phone" json:"phone"`
 		privateField string
 		IgnoredField string `form:"-"`
@@ -22,8 +31,10 @@ func TestValidator(t *testing.T) {
 		Phone:  "",
 	}
 
+	ctx := setupContext()
+
 	t.Run("pass non-pointer struct", func(st *testing.T) {
-		bindErr := ValidateStruct(person)
+		bindErr := validate(ctx, person)
 
 		if bindErr.HTTPStatusCode != ErrBindNonPointer.HTTPStatusCode {
 			st.Errorf("expected HTTPStatusCode error to be %d; got %d", ErrBindNonPointer.HTTPStatusCode, bindErr.HTTPStatusCode)
@@ -35,7 +46,7 @@ func TestValidator(t *testing.T) {
 	})
 
 	t.Run("validation should be passed", func(st *testing.T) {
-		errBind := ValidateStruct(&person)
+		errBind := validate(ctx, &person)
 
 		if errBind != nil {
 			t.Errorf("expected error binding to be nil; got %v", errBind)
@@ -44,39 +55,33 @@ func TestValidator(t *testing.T) {
 
 	t.Run("empty value on required fields", func(st *testing.T) {
 		person.Name = ""
+		person.Gender = ""
+		person.Email = ""
 
-		bindErr := ValidateStruct(&person)
+		bindErr := validate(ctx, &person)
 
 		if bindErr.HTTPStatusCode != http.StatusUnprocessableEntity {
 			st.Errorf("expected HTTPStatusCode error to be %d; got %d", ErrBindNonPointer.HTTPStatusCode, http.StatusUnprocessableEntity)
 		}
 
-		if bindErr.Message != "name fields are required" {
+		if bindErr.Message != "validation error" {
 			st.Errorf("expected error message to be %s; got %s", ErrBindNonPointer.Message, bindErr.Message)
 		}
 
-		person.Gender = ""
-
-		bindErr = ValidateStruct(&person)
-
-		if bindErr.HTTPStatusCode != http.StatusUnprocessableEntity {
-			st.Errorf("expected HTTPStatusCode error to be %d; got %d", ErrBindNonPointer.HTTPStatusCode, http.StatusUnprocessableEntity)
+		if errFieldsCount := len(bindErr.Fields); errFieldsCount != 3 {
+			st.Fatalf("expected num of error fields to be 3; got %d", errFieldsCount)
 		}
 
-		if bindErr.Message != "name & gender fields are required" {
-			st.Errorf("expected error message to be name & gender fields are required; got %s", bindErr.Message)
+		errFields := []string{
+			"name is a required field",
+			"gender is a required field",
+			"email is a required field",
 		}
 
-		person.Email = ""
-
-		bindErr = ValidateStruct(&person)
-
-		if bindErr.HTTPStatusCode != http.StatusUnprocessableEntity {
-			st.Errorf("expected HTTPStatusCode error to be %d; got %d", ErrBindNonPointer.HTTPStatusCode, http.StatusUnprocessableEntity)
-		}
-
-		if bindErr.Message != "name, gender, email fields are required" {
-			st.Errorf("expected error message to be name, gender, email fields are required; got %s", bindErr.Message)
+		for i, errMsg := range bindErr.Fields {
+			if errMsg != errFields[i] {
+				st.Errorf("expected error %d to be %s; got %s", i, errFields[i], errMsg)
+			}
 		}
 	})
 
@@ -84,11 +89,11 @@ func TestValidator(t *testing.T) {
 
 func TestNestedStructValidation(t *testing.T) {
 	type Person struct {
-		Name    string `form:"name" json:"name" rules:"required"`
-		Gender  string `form:"gender" json:"gender" rules:"required"`
+		Name    string `form:"name" json:"name" validate:"required"`
+		Gender  string `form:"gender" json:"gender" validate:"required"`
 		Address struct {
-			CityID     int `form:"city_id" json:"city_id" rules:"required"`
-			PostalCode int `form:"psotal_code" json:"postal_code"`
+			CityID     int `form:"city_id" json:"city_id" validate:"required"`
+			PostalCode int `form:"postal_code" json:"postal_code"`
 		}
 	}
 
@@ -96,21 +101,34 @@ func TestNestedStructValidation(t *testing.T) {
 		Name:   "foo",
 		Gender: "",
 		Address: struct {
-			CityID     int `form:"city_id" json:"city_id" rules:"required"`
-			PostalCode int `form:"psotal_code" json:"postal_code"`
+			CityID     int `form:"city_id" json:"city_id" validate:"required"`
+			PostalCode int `form:"postal_code" json:"postal_code"`
 		}{
 			CityID:     0,
 			PostalCode: 204,
 		},
 	}
 
-	errBind := ValidateStruct(&person)
+	ctx := setupContext()
+
+	errBind := validate(ctx, &person)
 
 	if errBind.HTTPStatusCode != http.StatusUnprocessableEntity {
 		t.Errorf("expected error HTTPStatusCode to be %d; got %d", http.StatusUnprocessableEntity, errBind.HTTPStatusCode)
 	}
 
-	if errBind.Message != "gender & city_id fields are required" {
-		t.Errorf("expected error message to be gender & city_id fields are required; got %s", errBind.Message)
+	if errBind.Message != "validation error" {
+		t.Errorf("expected error message to be validation error; got %s", errBind.Message)
+	}
+
+	errFields := []string{
+		"gender is a required field",
+		"city_id is a required field",
+	}
+
+	for i, errMsg := range errBind.Fields {
+		if errMsg != errFields[i] {
+			t.Errorf("expected error %d to be %s; got %s", i, errFields[i], errMsg)
+		}
 	}
 }
