@@ -10,6 +10,32 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+// Bag .
+type Bag struct {
+	data map[string]interface{}
+}
+
+// NewBag creates new bag instance.
+func NewBag() *Bag {
+	return &Bag{
+		data: make(map[string]interface{}),
+	}
+}
+
+// Set data to bag.
+func (b *Bag) Set(key string, data interface{}) {
+	b.data[key] = data
+}
+
+// Get data by given key.
+func (b *Bag) Get(key string) interface{} {
+	if data, ok := b.data[key]; ok {
+		return data
+	}
+
+	return nil
+}
+
 // Context defines nano request - response context.
 type Context struct {
 	Request    *http.Request
@@ -19,6 +45,7 @@ type Context struct {
 	Origin     string
 	Params     map[string]string
 	handlers   []HandlerFunc
+	Bag        *Bag
 	cursor     int // used for handlers stack.
 	validator  *validator.Validate
 	translator ut.Translator
@@ -37,6 +64,7 @@ func newContext(w http.ResponseWriter, r *http.Request) *Context {
 		Path:       r.URL.Path,
 		Origin:     r.Header.Get(HeaderOrigin),
 		cursor:     -1,
+		Bag:        NewBag(),
 		validator:  validator,
 		translator: trans,
 	}
