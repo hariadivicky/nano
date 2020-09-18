@@ -1,7 +1,6 @@
 package nano
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"

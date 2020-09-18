@@ -8,7 +8,14 @@ import (
 	"errors"
 	"net/http"
 	"strings"
+
+	jsontime "github.com/liamylian/jsontime/v2/v2"
 )
+
+func init() {
+	jsontime.AddTimeFormatAlias("sql_date", "2006-01-02")
+	jsontime.AddTimeFormatAlias("sql_datetime", "2006-01-02 15:04:02")
+}
 
 const (
 	// HeaderAcceptEncoding is accept encoding.
@@ -51,6 +58,7 @@ const (
 )
 
 var (
+	json = jsontime.ConfigWithCustomTimeFormat
 	// ErrDefaultHandler should be returned when user try to set default handler for seconds time.
 	ErrDefaultHandler = errors.New("default handler already registered")
 )
