@@ -9,7 +9,7 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-// Bag .
+// Bag stores context key:value parameter.
 type Bag struct {
 	data map[string]interface{}
 }
@@ -21,7 +21,7 @@ func NewBag() *Bag {
 	}
 }
 
-// Set data to bag.
+// Set bad data.
 func (b *Bag) Set(key string, data interface{}) {
 	b.data[key] = data
 }
@@ -69,7 +69,7 @@ func newContext(w http.ResponseWriter, r *http.Request) *Context {
 	}
 }
 
-// Next is functions to move cursor to the next handler stack.
+// Next moves cursor to the next handler stack.
 func (c *Context) Next() {
 	// moving cursor.
 	c.cursor++
@@ -79,12 +79,12 @@ func (c *Context) Next() {
 	}
 }
 
-// Status is functions to set http status code response.
+// Status sets http status code response.
 func (c *Context) Status(statusCode int) {
 	c.Writer.WriteHeader(statusCode)
 }
 
-// SetHeader is functions to set http response header.
+// SetHeader sets http response header.
 func (c *Context) SetHeader(key, value string) {
 	c.Writer.Header().Set(key, value)
 }
@@ -94,23 +94,23 @@ func (c *Context) GetRequestHeader(key string) string {
 	return c.Request.Header.Get(key)
 }
 
-// SetContentType is functions to set http content type response header.
+// SetContentType sets http content type response header.
 func (c *Context) SetContentType(contentType string) {
 	c.SetHeader(HeaderContentType, contentType)
 }
 
-// Param functions is to get request parameter.
+// Param gets request parameter.
 func (c *Context) Param(key string) string {
 	value, _ := c.Params[key]
 	return value
 }
 
-// PostForm is functions to form body field.
+// PostForm gets form body field.
 func (c *Context) PostForm(key string) string {
 	return c.Request.FormValue(key)
 }
 
-// PostFormDefault return default value when form body field is empty.
+// PostFormDefault returns default value when form body field is empty.
 func (c *Context) PostFormDefault(key string, defaultValue string) string {
 	v := c.PostForm(key)
 
@@ -121,7 +121,7 @@ func (c *Context) PostFormDefault(key string, defaultValue string) string {
 	return v
 }
 
-// Query is functions to get url query.
+// Query gets url query.
 func (c *Context) Query(key string) string {
 	return c.Request.URL.Query().Get(key)
 }
@@ -148,7 +148,7 @@ func (c *Context) ExpectJSON() bool {
 	return strings.Contains(c.GetRequestHeader(HeaderAccept), MimeJSON)
 }
 
-// JSON is functions to write json response.
+// JSON writes json as response.
 func (c *Context) JSON(statusCode int, object interface{}) {
 	rs, err := json.Marshal(object)
 	if err != nil {
@@ -161,7 +161,7 @@ func (c *Context) JSON(statusCode int, object interface{}) {
 	c.Writer.Write(rs)
 }
 
-// String is functions to write plain text response.
+// String writes plain text as response.
 func (c *Context) String(statusCode int, template string, value ...interface{}) {
 	c.SetContentType(MimePlainText)
 	c.Status(statusCode)
@@ -171,19 +171,19 @@ func (c *Context) String(statusCode int, template string, value ...interface{}) 
 	c.Writer.Write([]byte(text))
 }
 
-// File will returns static file as response.
+// File returns static file as response.
 func (c *Context) File(statusCode int, filepath string) {
 	http.ServeFile(c.Writer, c.Request, filepath)
 }
 
-// HTML is functions to write html response.
+// HTML writes html as response.
 func (c *Context) HTML(statusCode int, html string) {
 	c.SetContentType(MimeHTML)
 	c.Status(statusCode)
 	c.Writer.Write([]byte(html))
 }
 
-// Data is functions to write binary response.
+// Data writes binary as response.
 func (c *Context) Data(statusCode int, binary []byte) {
 	c.Status(statusCode)
 	c.Writer.Write(binary)

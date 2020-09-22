@@ -66,7 +66,7 @@ func (c *Context) Bind(targetStruct interface{}) *BindingError {
 	return c.BindSimpleForm(targetStruct)
 }
 
-// BindJSON is functions to bind request body (with contet type application/json) to targetStruct.
+// BindJSON functions to bind request body (with contet type application/json) to targetStruct.
 // targetStruct must be pointer to user defined struct.
 func (c *Context) BindJSON(targetStruct interface{}) *BindingError {
 	// only accept pointer
@@ -88,7 +88,7 @@ func (c *Context) BindJSON(targetStruct interface{}) *BindingError {
 	return validate(c, targetStruct)
 }
 
-// BindSimpleForm is functions to bind request body (with content type form-urlencoded or url query) to targetStruct.
+// BindSimpleForm functions to bind request body (with content type form-urlencoded or url query) to targetStruct.
 // targetStruct must be pointer to user defined struct.
 func (c *Context) BindSimpleForm(targetStruct interface{}) *BindingError {
 	// only accept pointer
@@ -118,7 +118,7 @@ func (c *Context) BindSimpleForm(targetStruct interface{}) *BindingError {
 	return validate(c, targetStruct)
 }
 
-// BindMultipartForm is functions to bind request body (with contet type multipart/form-data) to targetStruct.
+// BindMultipartForm functions to bind request body (with contet type multipart/form-data) to targetStruct.
 // targetStruct must be pointer to user defined struct.
 func (c *Context) BindMultipartForm(targetStruct interface{}) *BindingError {
 	// only accept pointer
@@ -148,7 +148,7 @@ func (c *Context) BindMultipartForm(targetStruct interface{}) *BindingError {
 	return validate(c, targetStruct)
 }
 
-// bindForm will map each field in request body into targetStruct.
+// bindForm maps each field in request body into targetStruct.
 func bindForm(form map[string][]string, targetStruct interface{}) error {
 	targetPtr := reflect.ValueOf(targetStruct).Elem()
 	targetType := targetPtr.Type()
@@ -214,7 +214,7 @@ func bindForm(form map[string][]string, targetStruct interface{}) error {
 	return nil
 }
 
-// setFieldValue is functions to set field with typed value.
+// setFieldValue sets field with typed value.
 // we will find the best type & size for your field value.
 // if empty string provided to value parameter, we will use zero type value as default field value.
 func setFieldValue(kind reflect.Kind, value string, fieldValue reflect.Value) error {
@@ -255,7 +255,7 @@ func setFieldValue(kind reflect.Kind, value string, fieldValue reflect.Value) er
 	return nil
 }
 
-// setIntField is functions to convert input string (value) into integer.
+// setIntField converts input string (value) into integer.
 func setIntField(value string, size int, field reflect.Value) {
 	convertedValue, err := strconv.ParseInt(value, 10, size)
 	// set default empty value when conversion.
@@ -265,7 +265,7 @@ func setIntField(value string, size int, field reflect.Value) {
 	field.SetInt(convertedValue)
 }
 
-// setUintField is functions to convert input string (value) into unsigned integer.
+// setUintField converts input string (value) into unsigned integer.
 func setUintField(value string, size int, field reflect.Value) {
 	convertedValue, err := strconv.ParseUint(value, 10, size)
 	// set default empty value when conversion.
@@ -275,7 +275,7 @@ func setUintField(value string, size int, field reflect.Value) {
 	field.SetUint(convertedValue)
 }
 
-// setBoolField is functions to convert input string (value) into boolean.
+// setBoolField converts input string (value) into boolean.
 func setBoolField(value string, field reflect.Value) {
 	convertedValue, err := strconv.ParseBool(value)
 	// set default empty value when conversion.
@@ -285,7 +285,7 @@ func setBoolField(value string, field reflect.Value) {
 	field.SetBool(convertedValue)
 }
 
-// setFloatField is functions to convert input string (value) into floating.
+// setFloatField converts input string (value) into floating.
 func setFloatField(value string, size int, field reflect.Value) {
 	convertedValue, err := strconv.ParseFloat(value, size)
 	// set default empty value when conversion.

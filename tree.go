@@ -10,12 +10,12 @@ type node struct {
 	isWildcard bool
 }
 
-// insertChildren is functions to insert node as children.
-// this function will call recursively as length of urlParts and cursor position (level)
+// insertChildren inserts node as children.
+// this function calls recursively as length of urlParts and cursor position (level)
 func (n *node) insertChildren(urlPattern string, urlParts []string, level int) {
 
 	// last inserted node cause cursor (level) has reached maximum value.
-	// will stop recursive calls.
+	// stop recursive calls.
 	if len(urlParts) == level {
 		// fill url pattern to marks current node as complete url pattern.
 		n.urlPattern = urlPattern
@@ -56,7 +56,7 @@ func (n *node) findChildren(urlPart string) *node {
 	return nil
 }
 
-// findNode is functions to find node.
+// findNode finds a node.
 // first (n *node) may be node that located at router.nodes[requestMethod].
 func (n *node) findNode(searchParts []string, level int) *node {
 	// cursor (level) reached maximum position.
@@ -90,7 +90,7 @@ func (n *node) findNode(searchParts []string, level int) *node {
 	return nil
 }
 
-// getChildren is functions to find children that has certain part
+// getChildren finds a children that has certain part
 // or it's a wildcard
 func (n *node) getChildren(urlPart string) []*node {
 	nodes := make([]*node, 0)

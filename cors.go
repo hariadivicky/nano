@@ -25,7 +25,7 @@ type CORS struct {
 	allowedHeaders []string
 }
 
-// parseRequestHeader is functions to split header string to array of headers.
+// parseRequestHeader splits header string to array of headers.
 func parseRequestHeader(header string) []string {
 
 	// request does not provide field Access-Control-Request-Header.
@@ -47,32 +47,32 @@ func parseRequestHeader(header string) []string {
 	return result
 }
 
-// SetAllowedOrigins is functions to fill/replace all allowed origins.
+// SetAllowedOrigins functions to fill/replace all allowed origins.
 func (cors *CORS) SetAllowedOrigins(origins []string) {
 	cors.allowedOrigins = origins
 }
 
-// SetAllowedMethods is functions to fill/replace all allowed methods.
+// SetAllowedMethods functions to fill/replace all allowed methods.
 func (cors *CORS) SetAllowedMethods(methods []string) {
 	cors.allowedMethods = methods
 }
 
-// SetAllowedHeaders is functions to fill/replace all allowed headers.
+// SetAllowedHeaders functions to fill/replace all allowed headers.
 func (cors *CORS) SetAllowedHeaders(headers []string) {
 	cors.allowedHeaders = headers
 }
 
-// AddAllowedHeader is functions to append method to allowed list.
+// AddAllowedHeader functions to append method to allowed list.
 func (cors *CORS) AddAllowedHeader(header string) {
 	cors.allowedHeaders = append(cors.allowedHeaders, header)
 }
 
-// AddAllowedMethod is functions to append method to allowed list.
+// AddAllowedMethod functions to append method to allowed list.
 func (cors *CORS) AddAllowedMethod(method string) {
 	cors.allowedMethods = append(cors.allowedMethods, method)
 }
 
-// AddAllowedOrigin is functions to append method to allowed list.
+// AddAllowedOrigin appends method to allowed list.
 func (cors *CORS) AddAllowedOrigin(origin string) {
 	cors.allowedOrigins = append(cors.allowedOrigins, origin)
 }
@@ -110,7 +110,7 @@ func (cors *CORS) isMethodAllowed(requestMethod string) bool {
 	return false
 }
 
-// mergeMethods is functions to stringify the allowed method list.
+// mergeMethods functions to stringify the allowed method list.
 func (cors *CORS) mergeMethods() string {
 	// when there is found * wildcard in the list, so just return it.
 	for _, method := range cors.allowedMethods {
@@ -133,7 +133,7 @@ func (cors *CORS) isAllHeaderAllowed() bool {
 	return false
 }
 
-// areHeadersAllowed is functions to check are all requested headers are allowed
+// areHeadersAllowed checks if all requested headers are allowed
 func (cors *CORS) areHeadersAllowed(requestedHeaders []string) bool {
 	// alway return true if there is no control header.
 	if cors.isAllHeaderAllowed() {
@@ -157,7 +157,7 @@ func (cors *CORS) areHeadersAllowed(requestedHeaders []string) bool {
 	return true
 }
 
-// handlePrefilghtRequest is functions to handle cross-origin preflight request.
+// handlePrefilghtRequest handles cross-origin preflight request.
 func (cors *CORS) handlePrefilghtRequest(c *Context) {
 	if c.Origin == "" {
 		return
@@ -197,7 +197,7 @@ func (cors *CORS) handlePrefilghtRequest(c *Context) {
 	}
 }
 
-// handleSimpleRequest is functions to handle simple cross origin request
+// handleSimpleRequest handles simple cross origin request
 func (cors *CORS) handleSimpleRequest(c *Context) {
 	if c.Origin == "" {
 		return

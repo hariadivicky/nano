@@ -13,7 +13,7 @@ type router struct {
 	defaultHandler HandlerFunc
 }
 
-// newRouter is the router constructor.
+// newRouter creates new router instance.
 func newRouter() *router {
 	return &router{
 		nodes:    make(map[string]*node),
@@ -42,7 +42,7 @@ func createURLParts(urlPattern string) []string {
 	return urlParts
 }
 
-// addRoute is functions to register route to router.
+// addRoute registers route to router.
 // you could use multiple handler.
 func (r *router) addRoute(requestMethod, urlPattern string, handler ...HandlerFunc) {
 	urlParts := createURLParts(urlPattern)
@@ -63,8 +63,8 @@ func (r *router) addRoute(requestMethod, urlPattern string, handler ...HandlerFu
 	r.handlers[key] = handler
 }
 
-// findRoute will find current request with stored url pattern in node tree.
-// this function will also mapping your parameter (which was defined in url pattern) from url request.
+// findRoute finds current request with stored url pattern in node tree.
+// this function also mapping your parameter (which was defined in url pattern) from url request.
 func (r *router) findRoute(requestMethod, urlPath string) (*node, map[string]string) {
 	searchParts := createURLParts(urlPath)
 	params := make(map[string]string)
@@ -106,7 +106,7 @@ func (r *router) notFoundHandler() HandlerFunc {
 	}
 }
 
-// serveDefaultHandler will append default handler to call stacks.
+// serveDefaultHandler appends default handler to call stacks.
 // if you not set the default handler, we will set notFoundHandler as default.
 func (r *router) serveDefaultHandler(c *Context) {
 	// create not found handler when default handler not set yet.

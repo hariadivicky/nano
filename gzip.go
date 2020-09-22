@@ -38,12 +38,12 @@ func Gzip(compressionLevel int) HandlerFunc {
 	}
 }
 
-// Write override default http response writer with gzip writter.
+// Write overrides default http response writer with gzip writter.
 func (g *gzipWriter) Write(data []byte) (int, error) {
 	return g.writer.Write(data)
 }
 
-// WriteHeader override response writer to delete content length.
+// WriteHeader overrides response writer to delete content length.
 // reference: https://github.com/labstack/echo/issues/444
 // If Content-Length header is set, gzip probably writes the wrong number of bytes.
 // We should delete the Content-Length header prior to writing the headers on a gzipped response.

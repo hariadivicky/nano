@@ -98,12 +98,12 @@ func New() *Engine {
 	return engine
 }
 
-// Use is functions to apply middleware function(s).
+// Use functions to apply middleware function(s).
 func (rg *RouterGroup) Use(middlewares ...HandlerFunc) {
 	rg.middlewares = append(rg.middlewares, middlewares...)
 }
 
-// Group is functions to create new router group.
+// Group functions to create new router group.
 func (rg *RouterGroup) Group(prefix string) *RouterGroup {
 	group := &RouterGroup{
 		prefix: rg.prefix + prefix,
@@ -163,7 +163,7 @@ func (rg *RouterGroup) Default(handler HandlerFunc) error {
 	return nil
 }
 
-// Static will create static file server.
+// Static creates static file server.
 func (rg *RouterGroup) Static(baseURL string, rootDir http.FileSystem) {
 	if strings.Contains(baseURL, ":") || strings.Contains(baseURL, "*") {
 		panic("cannot use dynamic url parameter in file server base url")
@@ -175,7 +175,7 @@ func (rg *RouterGroup) Static(baseURL string, rootDir http.FileSystem) {
 	rg.HEAD(urlPattern, handler)
 }
 
-// addRoute is functions to register new route with current group prefix.
+// addRoute functions to register new route with current group prefix.
 func (rg *RouterGroup) addRoute(requestMethod, urlPattern string, handler ...HandlerFunc) {
 	// append router group prefix.
 	prefixedURLPattern := rg.prefix + urlPattern
@@ -199,7 +199,7 @@ func (ng *Engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ng.router.handle(ctx)
 }
 
-// Run applications.
+// Run application.
 func (ng *Engine) Run(address string) error {
 	return http.ListenAndServe(address, ng)
 }

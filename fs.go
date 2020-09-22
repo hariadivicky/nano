@@ -4,7 +4,7 @@ import (
 	"net/http"
 )
 
-// fileServerHandler to handle static file server.
+// fileServerHandler handles static file server.
 func fileServerHandler(routerPrefix, baseURL string, rootDir http.FileSystem) HandlerFunc {
 	return func(c *Context) {
 		prefix := baseURL + "/"
