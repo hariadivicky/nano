@@ -116,42 +116,42 @@ func (rg *RouterGroup) Group(prefix string) *RouterGroup {
 	return group
 }
 
-// HEAD is functions to register route with HEAD request method.
+// HEAD functions to register route with HEAD request method.
 func (rg *RouterGroup) HEAD(urlPattern string, handler ...HandlerFunc) {
 	rg.addRoute(http.MethodHead, urlPattern, handler...)
 }
 
-// GET is functions to register route with GET request method.
+// GET functions to register route with GET request method.
 func (rg *RouterGroup) GET(urlPattern string, handler ...HandlerFunc) {
 	rg.addRoute(http.MethodGet, urlPattern, handler...)
 }
 
-// POST is functions to register route with POST request method.
-func (rg *RouterGroup) POST(urlPattern string, handler HandlerFunc) {
-	rg.addRoute(http.MethodPost, urlPattern, handler)
+// POST functions to register route with POST request method.
+func (rg *RouterGroup) POST(urlPattern string, handler ...HandlerFunc) {
+	rg.addRoute(http.MethodPost, urlPattern, handler...)
 }
 
-// PUT is functions to register route with PUT request method.
-func (rg *RouterGroup) PUT(urlPattern string, handler HandlerFunc) {
-	rg.addRoute(http.MethodPut, urlPattern, handler)
+// PUT functions to register route with PUT request method.
+func (rg *RouterGroup) PUT(urlPattern string, handler ...HandlerFunc) {
+	rg.addRoute(http.MethodPut, urlPattern, handler...)
 }
 
-// OPTIONS is functions to register route with OPTIONS request method.
-func (rg *RouterGroup) OPTIONS(urlPattern string, handler HandlerFunc) {
-	rg.addRoute(http.MethodOptions, urlPattern, handler)
+// OPTIONS functions to register route with OPTIONS request method.
+func (rg *RouterGroup) OPTIONS(urlPattern string, handler ...HandlerFunc) {
+	rg.addRoute(http.MethodOptions, urlPattern, handler...)
 }
 
-// PATCH is functions to register route with PATCH request method.
-func (rg *RouterGroup) PATCH(urlPattern string, handler HandlerFunc) {
-	rg.addRoute(http.MethodPatch, urlPattern, handler)
+// PATCH functions to register route with PATCH request method.
+func (rg *RouterGroup) PATCH(urlPattern string, handler ...HandlerFunc) {
+	rg.addRoute(http.MethodPatch, urlPattern, handler...)
 }
 
-// DELETE is functions to register route with DELETE request method.
-func (rg *RouterGroup) DELETE(urlPattern string, handler HandlerFunc) {
-	rg.addRoute(http.MethodDelete, urlPattern, handler)
+// DELETE functions to register route with DELETE request method.
+func (rg *RouterGroup) DELETE(urlPattern string, handler ...HandlerFunc) {
+	rg.addRoute(http.MethodDelete, urlPattern, handler...)
 }
 
-// Default is functions to register default handler when no matching routes.
+// Default functions to register default handler when no matching routes.
 // Only one Default handler allowed to register.
 func (rg *RouterGroup) Default(handler HandlerFunc) error {
 	// reject overriding.
