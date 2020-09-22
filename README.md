@@ -217,6 +217,8 @@ var schema ComplexSchema
 err := c.BindJSON(&schema)
 ```
 
+`BindJSON` can also parsing your `RFC3339` date/time format to another format by adding `time_format` in your field tag. You can read more at [jsontime](https://github.com/liamylian/jsontime) docs.
+
 #### Error Binding
 
 Each you call `Bind`, `BindSimpleForm`, `BindMultipartForm`, and `BindJSON` it's always returns `*nano.ErrorBinding,` except when binding success without any errors it returns `nil`. ErrorBinding has two field that are HTTPStatusCode & Message. Here is the details:
