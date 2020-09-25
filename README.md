@@ -4,7 +4,7 @@
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/hariadivicky/nano)](https://goreportcard.com/report/github.com/hariadivicky/nano) ![GitHub issues](https://img.shields.io/github/issues/hariadivicky/nano) ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/hariadivicky/nano) ![GitHub](https://img.shields.io/github/license/hariadivicky/nano)
 
-Nano is a simple & elegant HTTP multiplexer written in Go (Golang). It features REST API with Go net/http performance. If you need a minimalist, productivity, and love simplicity, Nano is great choice.
+Nano is a simple & elegant HTTP request multiplexer written in Go (Golang). It features REST API with Go net/http performance. If you need a minimalist, productivity, and love simplicity, Nano is great choice.
 
 ## Contents
 
@@ -90,6 +90,22 @@ func main() {
 $ go run example.go
 ```
 
+Nano is 100% compatible with standard go `net/http` package, you can also attach nano as `http.Server` handler.
+
+```go
+    app := nano.New()
+    // ...
+    server := &http.Server{
+        WriteTimeout: 10 * time.Second,
+        ReadTimeout:  10 * time.Second,
+        IdleTimeout:  30 * time.Second,
+        Handler:      app, // attach Nano as server handler.
+        Addr:         ":8000",
+    }
+
+    server.ListenAndServe()
+```
+
 ## API Usages
 
 You can find a ready-to-run examples at [Todo List Example](https://github.com/hariadivicky/nano-example).
@@ -98,7 +114,7 @@ You can find a ready-to-run examples at [Todo List Example](https://github.com/h
 
 ```go
 func main() {
-    // Creates a nano router
+    // Creates nano instance.
     app := nano.New()
 
     app.HEAD("/someHead", headHandler)
@@ -116,7 +132,7 @@ func main() {
 
 ### Default Route Handler
 
-You could register you own default handler, the default handler will called when there is not matching route found. If you doesn't set the default handler, nano will register default 404 response as default handler.
+You can register your own default handler. The default handler called when there is no matching route. If you doesn't set the default handler, nano will register 404 response text as default handler.
 
 ```go
 app.Default(func(c *nano.Context) {
@@ -145,7 +161,7 @@ func main() {
 
 ### Static File Server
 
-You could use `*nano.Static()` function to serve static files like html, css, and js in your server.
+You can use `*nano.Static()` function to serve static files like html, css, and js in your server.
 
 ```go
 func main() {
@@ -170,7 +186,7 @@ type Address struct {
 }
 ```
 
-By calling `Bind` function, it's will returns `*nano.BindingError` when an error occured due to deserialization error or validation error. The description about error fields will be stored in `err.Fields`.
+`Bind` function will returns `*nano.BindingError` when an error occured due to deserialization error or validation error. The description about error fields will be stored in `err.Fields`.
 
 ```go
 
@@ -186,13 +202,13 @@ app.GET("/address", func(c *nano.Context) {
 
 ```
 
-The `Bind` function automatically choose deserialization source based on your request Content-Type and request method. `GET` and `HEAD` methods will try to bind url query or urlencoded form. Otherwise, it will try to bind multipart form or json.
+`Bind` function automatically choose deserialization source based on your request Content-Type and request method. `GET` and `HEAD` methods will try to bind url query or urlencoded form. Otherwise, it will try to bind multipart form or json.
 
-but if you want to manually choose the binding source, you could uses this functions below:
+but if you want to manually choose the binding source, you can use this functions:
 
 #### Bind URL Query
 
-If you want to bind url query like `page=1&limit=50` or urlencoded form you could use `BindSimpleForm`
+If you want to bind url query like `page=1&limit=50` or urlencoded form you can use `BindSimpleForm`
 
 ```go
 var paging Pagination
@@ -201,7 +217,7 @@ err := c.BindSimpleForm(&paging)
 
 #### Bind Multipart Form
 
-You could use `BindMultipartForm` to bind request body with `multipart/form-data` type
+You can use `BindMultipartForm` to bind request body with `multipart/form-data` type
 
 ```go
 var post BlogPost
@@ -210,18 +226,18 @@ err := c.BindMultipartForm(&post)
 
 #### Bind JSON
 
-if you have request with `application/json` type, you could bind it using `BindJSON` function
+if you have request with `application/json` type, you can bind it using `BindJSON` function
 
 ```go
-var schema ComplexSchema
-err := c.BindJSON(&schema)
+var cart ShoppingCart
+err := c.BindJSON(&cart)
 ```
 
 `BindJSON` can also parsing your `RFC3339` date/time format to another format by adding `time_format` in your field tag. You can read more at [jsontime](https://github.com/liamylian/jsontime) docs.
 
 #### Error Binding
 
-Each you call `Bind`, `BindSimpleForm`, `BindMultipartForm`, and `BindJSON` it's always returns `*nano.ErrorBinding,` except when binding success without any errors it returns `nil`. ErrorBinding has two field that are HTTPStatusCode & Message. Here is the details:
+Each you call `Bind`, `BindSimpleForm`, `BindMultipartForm`, and `BindJSON` it's always returns `*nano.ErrorBinding,` except when binding success without any errors it returns `nil`. ErrorBinding has two field which are HTTPStatusCode & Message. Here is the details:
 
 |   | HTTPStatusCode | Reason                                                          |
 |---|----------------|-----------------------------------------------------------------|
@@ -233,7 +249,7 @@ Each you call `Bind`, `BindSimpleForm`, `BindMultipartForm`, and `BindJSON` it's
 
 ### Grouping Routes
 
-You could use grouping routes that have same prefix or using same middlewares
+You can make routes grouping which it have same prefix or using same middlewares
 
 ```go
 app := nano.New()
@@ -268,7 +284,7 @@ apiv1 := app.Group("/api/v1")
 
 ### Writing Middleware
 
-Middleware implement nano.HandlerFunc, you could forward request by calling `c.Next()`
+Middleware implements nano.HandlerFunc, you can forward the request to next handler by calling `c.Next()`
 
 ```go
 // LoggerMiddleware functions to log every request.
@@ -289,13 +305,13 @@ func LoggerMiddleware() nano.HandlerFunc {
 
 ### Using Middleware
 
-Using middleware on certain route
+Using middleware in certain route
 
 ```go
 app.GET("/change-password", verifyTokenMiddleware(), changePasswordHandler)
 ```
 
-You could chaining middleware or handler
+You can chains the middlewares (handler)
 
 ```go
 app.GET("/secret", verifyStepOne(), verifyStepTwo(), grantAccessHandler, logChangeHandler)
@@ -303,7 +319,7 @@ app.GET("/secret", verifyStepOne(), verifyStepTwo(), grantAccessHandler, logChan
 
 ### Middleware Group
 
-Using middleware on router group
+Using middleware in router group
 
 ```go
 app := nano.New()
@@ -393,7 +409,7 @@ Plain text response
 c.String(http.StatusNotFound, "404 not found: %s", c.Path)
 ```
 
-JSON response (with nano object wrapper)
+JSON response (using nano object wrapper)
 
 ```go
 c.JSON(http.StatusOK, nano.H{
@@ -416,11 +432,11 @@ c.Data(http.StatusOK, binaryData)
 
 ## Nano Middlewares
 
-Nano has shipped with some default middleware like cors and recovery middleware.
+Nano has shipped with some default middleware like cors, gzip compressor, and recovery middleware.
 
 ### Recovery Middleware
 
-Recovery middleware is functions to recover server when panic was fired.
+Recovery middleware recovers server from panic.
 
 ```go
 func main() {
@@ -439,7 +455,7 @@ func main() {
 
 ### CORS Middleware
 
-This middleware is used to deal with cross-origin request.
+CORS middleware handles cross-origin request.
 
 ```go
 func main() {
@@ -460,7 +476,7 @@ func main() {
 
 ### Gzip Middleware
 
-Gzip middleware is used for http response compression.
+Gzip middleware compresses http response using gzip encoding.
 
 ```go
 func main() {
@@ -476,10 +492,10 @@ don't forget to import `compress/gzip` package for compression level at this exa
 
 ## Users
 
-Awesome project lists using [Nano](https://github.com/hariadivicky/nano) web framework.
+Awesome projects list using [Nano](https://github.com/hariadivicky/nano) web framework.
 
 - [Coming soon](https://github.com/hariadivicky/coming-soon): A local retail shop written in Go.
 
 ## License
 
-Nano using MIT license. Please read LICENSE files for more information about nano license.
+Nano using MIT license. Please read LICENSE files for more information about Nano license.
