@@ -9,29 +9,38 @@ import (
 	"strings"
 )
 
-// BindingError is an error wrapper.
-// HTTPStatusCode will set to 422 when there is error on validation,
+// ErrBinding defines an error interface implementation and it will returned when binding failed.
+// Status will set to 422 when there is error on validation,
 // 400 when client sent unsupported/without Content-Type header, and
 // 500 when targetStruct is not pointer or type conversion is fail.
-type BindingError struct {
-	HTTPStatusCode int
-	Message        string
-	Fields         []string
+type ErrBinding struct {
+	Status int
+	Text   string
+	Fields []string
 }
 
 var (
 	// ErrBindNonPointer must be returned when non-pointer struct passed as targetStruct parameter.
-	ErrBindNonPointer = &BindingError{
-		Message:        "expected pointer to target struct, got non-pointer",
-		HTTPStatusCode: http.StatusInternalServerError,
+	ErrBindNonPointer = ErrBinding{
+		Text:   "expected pointer to target struct, got non-pointer",
+		Status: http.StatusInternalServerError,
 	}
 
 	// ErrBindContentType returned when client content type besides json, urlencoded, & multipart form.
-	ErrBindContentType = &BindingError{
-		HTTPStatusCode: http.StatusBadRequest,
-		Message:        "unknown content type of request body",
+	ErrBindContentType = ErrBinding{
+		Status: http.StatusBadRequest,
+		Text:   "unknown content type of request body",
 	}
 )
+
+// Error implements error interface.
+func (e ErrBinding) Error() string {
+	if len(e.Fields) > 0 {
+		return e.Text + " " + strings.Join(e.Fields, ",")
+	}
+
+	return e.Text
+}
 
 // Bind request body into defined user struct.
 // This function help you to automatic binding based on request Content-Type & request method.
@@ -39,7 +48,7 @@ var (
 // BindSimpleForm to bind urlencoded form & url query,
 // BindMultipartForm to bind multipart/form data,
 // and BindJSON to bind application/json request body.
-func (c *Context) Bind(targetStruct interface{}) *BindingError {
+func (c *Context) Bind(targetStruct interface{}) error {
 	contentType := c.GetRequestHeader(HeaderContentType)
 
 	// if client request using POST, PUT, & PATCH we will try to bind request using simple form (urlencoded & url query),
@@ -68,7 +77,7 @@ func (c *Context) Bind(targetStruct interface{}) *BindingError {
 
 // BindJSON functions to bind request body (with contet type application/json) to targetStruct.
 // targetStruct must be pointer to user defined struct.
-func (c *Context) BindJSON(targetStruct interface{}) *BindingError {
+func (c *Context) BindJSON(targetStruct interface{}) error {
 	// only accept pointer
 	if reflect.TypeOf(targetStruct).Kind() != reflect.Ptr {
 		return ErrBindNonPointer
@@ -78,9 +87,9 @@ func (c *Context) BindJSON(targetStruct interface{}) *BindingError {
 		defer c.Request.Body.Close()
 		err := json.NewDecoder(c.Request.Body).Decode(targetStruct)
 		if err != nil && err != io.EOF {
-			return &BindingError{
-				Message:        err.Error(),
-				HTTPStatusCode: http.StatusBadRequest,
+			return ErrBinding{
+				Text:   err.Error(),
+				Status: http.StatusBadRequest,
 			}
 		}
 	}
@@ -90,28 +99,26 @@ func (c *Context) BindJSON(targetStruct interface{}) *BindingError {
 
 // BindSimpleForm functions to bind request body (with content type form-urlencoded or url query) to targetStruct.
 // targetStruct must be pointer to user defined struct.
-func (c *Context) BindSimpleForm(targetStruct interface{}) *BindingError {
+func (c *Context) BindSimpleForm(targetStruct interface{}) error {
 	// only accept pointer
 	if reflect.TypeOf(targetStruct).Kind() != reflect.Ptr {
-		return &BindingError{
-			Message:        "expected pointer to target struct, got non-pointer",
-			HTTPStatusCode: http.StatusInternalServerError,
+		return ErrBinding{
+			Text:   "expected pointer to target struct, got non-pointer",
+			Status: http.StatusInternalServerError,
 		}
 	}
 
-	err := c.Request.ParseForm()
-	if err != nil {
-		return &BindingError{
-			Message:        fmt.Sprintf("could not parsing form body: %v", err),
-			HTTPStatusCode: http.StatusInternalServerError,
+	if err := c.Request.ParseForm(); err != nil {
+		return ErrBinding{
+			Text:   fmt.Sprintf("could not parsing form body: %v", err),
+			Status: http.StatusInternalServerError,
 		}
 	}
 
-	err = bindForm(c.Request.Form, targetStruct)
-	if err != nil {
-		return &BindingError{
-			HTTPStatusCode: http.StatusInternalServerError,
-			Message:        fmt.Sprintf("binding error: %v", err),
+	if err := bindForm(c.Request.Form, targetStruct); err != nil {
+		return ErrBinding{
+			Status: http.StatusInternalServerError,
+			Text:   fmt.Sprintf("binding error: %v", err),
 		}
 	}
 
@@ -120,28 +127,28 @@ func (c *Context) BindSimpleForm(targetStruct interface{}) *BindingError {
 
 // BindMultipartForm functions to bind request body (with contet type multipart/form-data) to targetStruct.
 // targetStruct must be pointer to user defined struct.
-func (c *Context) BindMultipartForm(targetStruct interface{}) *BindingError {
+func (c *Context) BindMultipartForm(targetStruct interface{}) error {
 	// only accept pointer
 	if reflect.TypeOf(targetStruct).Kind() != reflect.Ptr {
-		return &BindingError{
-			Message:        "expected pointer to target struct, got non-pointer",
-			HTTPStatusCode: http.StatusInternalServerError,
+		return ErrBinding{
+			Text:   "expected pointer to target struct, got non-pointer",
+			Status: http.StatusInternalServerError,
 		}
 	}
 
 	err := c.Request.ParseMultipartForm(16 << 10)
 	if err != nil {
-		return &BindingError{
-			Message:        fmt.Sprintf("could not parsing form body: %v", err),
-			HTTPStatusCode: http.StatusBadRequest,
+		return ErrBinding{
+			Text:   fmt.Sprintf("could not parsing form body: %v", err),
+			Status: http.StatusBadRequest,
 		}
 	}
 
 	err = bindForm(c.Request.MultipartForm.Value, targetStruct)
 	if err != nil {
-		return &BindingError{
-			HTTPStatusCode: http.StatusInternalServerError,
-			Message:        fmt.Sprintf("binding error: %v", err),
+		return ErrBinding{
+			Status: http.StatusInternalServerError,
+			Text:   fmt.Sprintf("binding error: %v", err),
 		}
 	}
 

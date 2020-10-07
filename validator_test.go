@@ -34,14 +34,19 @@ func TestValidator(t *testing.T) {
 	ctx := setupContext()
 
 	t.Run("pass non-pointer struct", func(st *testing.T) {
-		bindErr := validate(ctx, person)
-
-		if bindErr.HTTPStatusCode != ErrBindNonPointer.HTTPStatusCode {
-			st.Errorf("expected HTTPStatusCode error to be %d; got %d", ErrBindNonPointer.HTTPStatusCode, bindErr.HTTPStatusCode)
+		err := validate(ctx, person)
+		if err == nil {
+			t.Fatalf("expected error to be returned")
 		}
 
-		if bindErr.Message != ErrBindNonPointer.Message {
-			st.Errorf("expected error message to be %s; got %s", ErrBindNonPointer.Message, bindErr.Message)
+		if errBind, ok := err.(ErrBinding); ok {
+			if errBind.Status != ErrBindNonPointer.Status {
+				st.Errorf("expected HTTPStatusCode error to be %d; got %d", ErrBindNonPointer.Status, errBind.Status)
+			}
+
+			if errBind.Text != ErrBindNonPointer.Text {
+				st.Errorf("expected error message to be %s; got %s", ErrBindNonPointer.Text, errBind.Text)
+			}
 		}
 	})
 
@@ -58,31 +63,40 @@ func TestValidator(t *testing.T) {
 		person.Gender = ""
 		person.Email = ""
 
-		bindErr := validate(ctx, &person)
-
-		if bindErr.HTTPStatusCode != http.StatusUnprocessableEntity {
-			st.Errorf("expected HTTPStatusCode error to be %d; got %d", ErrBindNonPointer.HTTPStatusCode, http.StatusUnprocessableEntity)
+		err := validate(ctx, &person)
+		if err == nil {
+			st.Fatalf("expected error to be returned")
 		}
 
-		if bindErr.Message != "validation error" {
-			st.Errorf("expected error message to be %s; got %s", ErrBindNonPointer.Message, bindErr.Message)
-		}
-
-		if errFieldsCount := len(bindErr.Fields); errFieldsCount != 3 {
-			st.Fatalf("expected num of error fields to be 3; got %d", errFieldsCount)
-		}
-
-		errFields := []string{
-			"name is a required field",
-			"gender is a required field",
-			"email is a required field",
-		}
-
-		for i, errMsg := range bindErr.Fields {
-			if errMsg != errFields[i] {
-				st.Errorf("expected error %d to be %s; got %s", i, errFields[i], errMsg)
+		if bindErr, ok := err.(ErrBinding); ok {
+			if bindErr.Status != http.StatusUnprocessableEntity {
+				st.Errorf("expected HTTPStatusCode error to be %d; got %d", ErrBindNonPointer.Status, http.StatusUnprocessableEntity)
 			}
+
+			if bindErr.Text != "validation error" {
+				st.Errorf("expected error message to be %s; got %s", ErrBindNonPointer.Text, bindErr.Text)
+			}
+
+			if errFieldsCount := len(bindErr.Fields); errFieldsCount != 3 {
+				st.Fatalf("expected num of error fields to be 3; got %d", errFieldsCount)
+			}
+
+			errFields := []string{
+				"name is a required field",
+				"gender is a required field",
+				"email is a required field",
+			}
+
+			for i, errMsg := range bindErr.Fields {
+				if errMsg != errFields[i] {
+					st.Errorf("expected error %d to be %s; got %s", i, errFields[i], errMsg)
+				}
+			}
+
+			return
 		}
+
+		st.Fatalf("expected error type to be ErrBinding, got %T", err)
 	})
 
 }
@@ -111,24 +125,33 @@ func TestNestedStructValidation(t *testing.T) {
 
 	ctx := setupContext()
 
-	errBind := validate(ctx, &person)
-
-	if errBind.HTTPStatusCode != http.StatusUnprocessableEntity {
-		t.Errorf("expected error HTTPStatusCode to be %d; got %d", http.StatusUnprocessableEntity, errBind.HTTPStatusCode)
+	err := validate(ctx, &person)
+	if err == nil {
+		t.Fatalf("expected error to be returned")
 	}
 
-	if errBind.Message != "validation error" {
-		t.Errorf("expected error message to be validation error; got %s", errBind.Message)
-	}
-
-	errFields := []string{
-		"gender is a required field",
-		"city_id is a required field",
-	}
-
-	for i, errMsg := range errBind.Fields {
-		if errMsg != errFields[i] {
-			t.Errorf("expected error %d to be %s; got %s", i, errFields[i], errMsg)
+	if errBind, ok := err.(ErrBinding); ok {
+		if errBind.Status != http.StatusUnprocessableEntity {
+			t.Errorf("expected error HTTPStatusCode to be %d; got %d", http.StatusUnprocessableEntity, errBind.Status)
 		}
+
+		if errBind.Text != "validation error" {
+			t.Errorf("expected error message to be validation error; got %s", errBind.Text)
+		}
+
+		errFields := []string{
+			"gender is a required field",
+			"city_id is a required field",
+		}
+
+		for i, errMsg := range errBind.Fields {
+			if errMsg != errFields[i] {
+				t.Errorf("expected error %d to be %s; got %s", i, errFields[i], errMsg)
+			}
+		}
+
+		return
 	}
+
+	t.Fatalf("expected ErrBinding, got %T", err)
 }

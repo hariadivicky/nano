@@ -26,15 +26,24 @@ func TestAutoBindingForUnexpectedContentType(t *testing.T) {
 	}
 
 	var person Person
-	errBinding := ctx.Bind(&person)
-
-	if errBinding.HTTPStatusCode != ErrBindContentType.HTTPStatusCode {
-		t.Errorf("expected error HTTPStatusCode to be %d; got %d", ErrBindContentType.HTTPStatusCode, errBinding.HTTPStatusCode)
+	if err = ctx.Bind(&person); err == nil {
+		t.Fatalf("expected error returned")
 	}
 
-	if errBinding.Message != ErrBindContentType.Message {
-		t.Errorf("expected error message to be %s; got %s", ErrBindContentType.Message, errBinding.Message)
+	if err, ok := err.(ErrBinding); ok {
+		if err.Status != ErrBindContentType.Status {
+			t.Errorf("expected error HTTPStatusCode to be %d; got %d", ErrBindContentType.Status, err.Status)
+		}
+
+		if err.Text != ErrBindContentType.Text {
+			t.Errorf("expected error message to be %s; got %s", ErrBindContentType.Text, err.Text)
+		}
+
+		return
 	}
+
+	t.Fatalf("expected ErrBinding type returned, got %T", err)
+
 }
 
 func TestAutoBindingForURLEncoded(t *testing.T) {
@@ -127,10 +136,9 @@ func TestAutoBindingForMultipartForm(t *testing.T) {
 	}
 
 	var person Person
-	errBinding := ctx.Bind(&person)
 
-	if errBinding != nil {
-		t.Fatalf("expected err binding to nil; got %s", errBinding.Message)
+	if err = ctx.Bind(&person); err != nil {
+		t.Fatalf("expected err binding to nil; got %T", err)
 	}
 
 	if person.Name != "foo" {
@@ -159,14 +167,20 @@ func TestBindJSON(t *testing.T) {
 
 		ctx := newContext(w, req)
 
-		errBinding := ctx.BindJSON(person)
-
-		if errBinding == nil {
-			st.Errorf("expected error to be returned; got %v", errBinding)
+		err = ctx.BindJSON(person)
+		if err == nil {
+			st.Errorf("expected error to be returned; got %T", err)
 		}
 
-		if errBinding != ErrBindNonPointer {
-			st.Errorf("expect error to be ErrBindNonPointer; got %v", errBinding)
+		if errBinding, ok := err.(ErrBinding); ok {
+			if errBinding.Error() != ErrBindNonPointer.Error() {
+				st.Errorf("expect error to be ErrBindNonPointer; got %v", errBinding)
+			}
+
+			return
 		}
+
+		st.Fatalf("expected ErrBinding, got %T", err)
+
 	})
 }

@@ -44,12 +44,12 @@ func newValidator(trans ut.Translator) *validator.Validate {
 // if you apply "required" rule, that is mean you are not allowed to use zero type value in you request body field
 // because it will give you validation error.
 // so if you need 0 value for int field or false value for boolean field, pelase consider to not use "required" rules.
-func validate(c *Context, targetStruct interface{}) *BindingError {
+func validate(c *Context, targetStruct interface{}) error {
 	// only accept pointer
 	if reflect.TypeOf(targetStruct).Kind() != reflect.Ptr {
-		return &BindingError{
-			Message:        "expected pointer to target struct, got non-pointer",
-			HTTPStatusCode: http.StatusInternalServerError,
+		return &ErrBinding{
+			Text:   "expected pointer to target struct, got non-pointer",
+			Status: http.StatusInternalServerError,
 		}
 	}
 
@@ -61,10 +61,10 @@ func validate(c *Context, targetStruct interface{}) *BindingError {
 			errFields = append(errFields, err.Translate(c.translator))
 		}
 
-		return &BindingError{
-			HTTPStatusCode: http.StatusUnprocessableEntity,
-			Message:        "validation error",
-			Fields:         errFields,
+		return ErrBinding{
+			Status: http.StatusUnprocessableEntity,
+			Text:   "validation error",
+			Fields: errFields,
 		}
 	}
 
